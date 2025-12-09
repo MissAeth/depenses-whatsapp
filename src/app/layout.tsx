@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import { ClerkProvider } from '@clerk/nextjs'
+// TEMPORAIRE - Clerk désactivé
+// import { ClerkProvider } from '@clerk/nextjs'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 
@@ -25,26 +26,25 @@ export default function RootLayout({
   children,
 }: { readonly children: React.ReactNode }) {
   return (
-    <ClerkProvider>
-      <html lang="fr">
-        <head>
-          <meta name="theme-color" content="#18181B" />
-          <meta name="apple-mobile-web-app-capable" content="yes" />
-          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-          <meta name="apple-mobile-web-app-title" content="Notes SGDF" />
-          <meta name="mobile-web-app-capable" content="yes" />
-          <link rel="icon" href="/favicon.ico" />
-          <link rel="apple-touch-icon" href="/SGDF_symbole_RVB.png" />
-          <link rel="manifest" href="/manifest.json" />
-        </head>
-        <body className="font-sans">
-          <div className="min-h-screen">
-            {children}
-          </div>
-          <SpeedInsights />
-          <script dangerouslySetInnerHTML={{__html:`if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW registration failed',e));});}`}} />
-        </body>
-      </html>
-    </ClerkProvider>
+    // TEMPORAIRE - Sans ClerkProvider pour test
+    <html lang="fr">
+      <head>
+        <meta name="theme-color" content="#18181B" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Notes SGDF" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/SGDF_symbole_RVB.png" />
+        <link rel="manifest" href="/manifest.json" />
+      </head>
+      <body className="font-sans">
+        <div className="min-h-screen">
+          {children}
+        </div>
+        <SpeedInsights />
+        <script dangerouslySetInnerHTML={{__html:`if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW registration failed',e));});}`}} />
+      </body>
+    </html>
   )
 }

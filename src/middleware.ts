@@ -1,15 +1,21 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+// TEMPORAIRE - Middleware Clerk désactivé pour test
+// import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
-const isProtectedRoute = createRouteMatcher([
-  '/',
-  '/api/send-expense'
-])
+// const isProtectedRoute = createRouteMatcher([
+//   '/',
+//   '/api/send-expense'
+// ])
 
-export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) {
-    await auth.protect()
-  }
-})
+// export default clerkMiddleware(async (auth, req) => {
+//   if (isProtectedRoute(req)) {
+//     await auth.protect()
+//   }
+// })
+
+// Middleware temporaire vide
+export default function middleware() {
+  // Pass through all requests without authentication
+}
 
 export const config = {
   matcher: [

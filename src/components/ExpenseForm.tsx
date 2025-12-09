@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { ClipboardDocumentListIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
+import { ClipboardDocumentListIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusCircleIcon, PaperAirplaneIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { processExpenseContent, type ExtractedExpenseData } from '@/lib/ai-processor'
 
 interface ExpenseFormProps {
   readonly capturedImage: string | null
@@ -13,15 +14,16 @@ interface ExpenseFormProps {
   readonly onBranchChange?: (branch: string) => void
 }
 
-const SGDF_BRANCHES = [
-  'Farfadets',
-  'Louveteaux',
-  'Jeannettes',
-  'Scouts',
-  'Guides',
-  'Pionniers-Caravelles',
-  'Compagnons',
-  'Groupe'
+// Catégories de dépenses personnelles
+const EXPENSE_CATEGORIES = [
+  'Transport',
+  'Restauration',
+  'Hébergement',
+  'Fournitures',
+  'Abonnements',
+  'Santé',
+  'Loisirs',
+  'Divers'
 ]
 
 export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange, isOnline = true }: ExpenseFormProps & { isOnline?: boolean }) {
@@ -40,7 +42,70 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
     message: string
   }>({ type: null, message: '' })
 
+  const [aiProcessing, setAiProcessing] = useState(false)
+  const [aiSuggestions, setAiSuggestions] = useState<ExtractedExpenseData | null>(null)
 
+  // Traiter l'image automatiquement avec l'IA quand une nouvelle image arrive
+  useEffect(() => {
+    if (capturedImage) {
+      // Force reset complet des suggestions et retraitement
+      console.log('🔄 Nouvelle image détectée, reset complet...')
+      setAiSuggestions(null)
+      setAiProcessing(false)
+      
+      // Petit délai pour s'assurer que le reset est visible
+      setTimeout(() => {
+        processImageWithAI()
+      }, 100)
+    }
+  }, [capturedImage]) // Fermeture correcte du useEffect
+
+  const processImageWithAI = async () => {
+    console.log('🎯 processImageWithAI appelé - capturedImage:', !!capturedImage)
+    
+    if (!capturedImage) {
+      console.log('❌ Pas d\'image capturée, arrêt du traitement')
+      return
+    }
+
+    console.log('🚀 Démarrage traitement IA...')
+    setAiProcessing(true)
+    
+    // Reset du formulaire avant nouveau traitement
+    setFormData(prev => ({
+      ...prev,
+      amount: '',
+      expenseType: '',
+      description: ''
+    }))
+
+    try {
+      console.log('🤖 Appel processExpenseContent avec image...')
+      const extractedData = await processExpenseContent(capturedImage)
+      console.log('✅ Données extraites par IA:', extractedData)
+      
+      console.log('💾 Sauvegarde des suggestions IA...')
+      setAiSuggestions(extractedData)
+      
+      console.log('📝 Auto-remplissage du formulaire...')
+      // Auto-remplir le formulaire avec les nouvelles suggestions IA
+      setFormData(prev => ({
+        ...prev,
+        amount: extractedData.amount > 0 ? extractedData.amount.toString() : '',
+        branch: extractedData.category,
+        expenseType: extractedData.description,
+        description: `${extractedData.merchant} - ${extractedData.description}`
+      }))
+      
+      console.log('✨ Traitement IA terminé avec succès')
+    } catch (error) {
+      console.error('❌ Erreur traitement IA:', error)
+      setAiSuggestions(null)
+    } finally {
+      console.log('🏁 Fin du traitement IA')
+      setAiProcessing(false)
+    }
+  }
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -110,7 +175,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
       if (response.ok) {
         setSubmitStatus({
           type: 'success',
-          message: 'Email envoyé avec succès ! La facture a été transmise à la trésorerie et une copie vous a été envoyée.'
+          message: 'Dépense enregistrée avec succès ! Les informations ont été sauvegardées et un email de confirmation a été envoyé.'
         })
         // Reset only variable fields but keep branch (souvent même branche pour plusieurs notes)
         setFormData(prev => ({
@@ -150,6 +215,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
       description: ''
     }))
     setSubmitStatus({ type: null, message: '' })
+    setAiSuggestions(null) // Clear AI suggestions
     if (onCreateNewNote) onCreateNewNote()
   }
 
@@ -173,6 +239,50 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
             height={200}
             className="w-full h-48 object-cover rounded-lg border border-zinc-200"
           />
+          
+          {/* Statut du traitement IA */}
+          {aiProcessing && (
+            <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <svg className="animate-spin h-4 w-4 text-blue-600" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              <SparklesIcon className="w-4 h-4 text-blue-600" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-blue-800">Analyse en cours avec l'IA...</span>
+                <span className="text-xs text-blue-600">OCR + Extraction des données</span>
+              </div>
+            </div>
+          )}
+          
+          {aiSuggestions && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <SparklesIcon className="w-5 h-5 text-green-600 mt-0.5" />
+                <div className="flex-1">
+                  <div className="flex justify-between items-start">
+                    <h4 className="text-sm font-medium text-green-800">Données extraites par l'IA</h4>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        console.log('🔄 Force nouveau traitement IA...')
+                        processImageWithAI()
+                      }}
+                      className="text-xs text-green-600 hover:text-green-800 underline"
+                    >
+                      Retraiter
+                    </button>
+                  </div>
+                  <div className="mt-2 text-xs text-green-700">
+                    <p><strong>Montant:</strong> {aiSuggestions.amount}€</p>
+                    <p><strong>Marchand:</strong> {aiSuggestions.merchant}</p>
+                    <p><strong>Catégorie:</strong> {aiSuggestions.category}</p>
+                    <p><strong>Confiance:</strong> {Math.round(aiSuggestions.confidence * 100)}%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -189,18 +299,19 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
         >
           <option value="">Sélectionner un type</option>
           {[
-            'Alimentation, Intendance',
-            'Achat Petit Materiel',
-            'Achat Materiel PÈdagogique',
-            'Transport collectif Train',
-            'Transport collectif : en Autocar',
-            'Transport collectif en commun (RER, metro, Tram, bus, etc.)',
-            'Medecin, Pharmacie',
-            'Hebergement',
-            'Achat Gros Materiel',
-            'Participation Activites',
-            'Carburants',
-            'Peage-Parking',
+            'Restaurant, Bar, Café',
+            'Courses alimentaires',
+            'Transport en commun',
+            'Taxi, VTC',
+            'Carburant, Péage',
+            'Hôtel, Hébergement',
+            'Médecin, Pharmacie',
+            'Fournitures bureau',
+            'Vêtements',
+            'Abonnement services',
+            'Loisirs, Culture',
+            'Formation',
+            'Frais bancaires',
             'Autres'
           ].map(type => (
             <option key={type} value={type}>{type}</option>
@@ -224,7 +335,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
 
       <div className="space-y-2">
         <label htmlFor="branch" className="block text-sm font-medium text-zinc-700">
-          Branche *
+          Catégorie *
         </label>
         <select
           id="branch"
@@ -233,10 +344,10 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
           className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         >
-          <option value="">Sélectionner une branche</option>
-          {SGDF_BRANCHES.map(branch => (
-            <option key={branch} value={branch}>
-              {branch}
+          <option value="">Sélectionner une catégorie</option>
+          {EXPENSE_CATEGORIES.map(category => (
+            <option key={category} value={category}>
+              {category}
             </option>
           ))}
         </select>
@@ -369,7 +480,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
             </span>
           ) : (
             <span className="inline-flex items-center justify-center gap-2">
-              <PaperAirplaneIcon className="w-5 h-5" aria-hidden="true" /> Envoyer la facture
+              <PaperAirplaneIcon className="w-5 h-5" aria-hidden="true" /> Enregistrer la dépense
             </span>
           )}
         </button>
