@@ -27,29 +27,88 @@ const CATEGORY_KEYWORDS = {
 }
 
 /**
- * Extrait le montant d'un texte avec différents patterns
+ * Extrait le montant d'un texte avec différents patterns (amélioré pour tickets français)
  */
 function extractAmount(text: string): number {
+  console.log('💰 Extraction du montant depuis:', text.substring(0, 200))
+  
+  // Patterns améliorés pour tickets français
   const patterns = [
-    /TOTAL[:\s]*(\d+[,\.]\d{2})\s*€?/i,  // TOTAL: 15.50€
-    /(?:€|EUR)\s*(\d+[,\.]\d{2})/gi,      // €15.50
-    /(\d+[,\.]\d{2})\s*(?:€|EUR)/gi,      // 15.50€
-    /(\d+[,\.]\d{2})\s*$/gm,              // 15.50 en fin de ligne
-    /(\d{1,4}[,\.]\d{2})/g,               // Format général
+    // Patterns avec "TOTAL" (priorité haute)
+    /TOTAL[:\s]*(\d+[,\.]\d{2})\s*€?/i,           // TOTAL: 15.50€
+    /TOTAL[:\s]*(\d+)\s*[,\.]\s*(\d{2})\s*€?/i,   // TOTAL: 15,50€ (avec espace)
+    /TOTAL[:\s]*(\d+)\s*€?/i,                      // TOTAL: 15€ (sans centimes)
+    
+    // Patterns avec "€" ou "EUR"
+    /(\d+[,\.]\d{2})\s*(?:€|EUR|EUROS?)/gi,        // 15.50€ ou 15,50€
+    /(?:€|EUR|EUROS?)\s*(\d+[,\.]\d{2})/gi,         // €15.50 ou €15,50
+    /(\d+)\s*[,\.]\s*(\d{2})\s*(?:€|EUR)/gi,       // 15 , 50€ (avec espaces)
+    
+    // Montants en fin de ligne (souvent le total)
+    /(\d+[,\.]\d{2})\s*$/gm,                        // 15.50 en fin de ligne
+    /(\d+)\s*[,\.]\s*(\d{2})\s*$/gm,               // 15 , 50 en fin de ligne
+    
+    // Patterns généraux (dernier recours)
+    /\b(\d{1,3}(?:\s*\d{3})*[,\.]\d{2})\b/g,       // 1 234,56 (format français avec espaces)
+    /\b(\d{1,4}[,\.]\d{2})\b/g,                    // Format général
   ]
 
   const amounts: number[] = []
   
   for (const pattern of patterns) {
-    const matches = text.match(pattern)
-    if (matches) {
-      for (const match of matches) {
-        const amountMatch = match.match(/(\d+[,\.]\d{2})/)
-        if (amountMatch) {
-          const amountStr = amountMatch[1].replace(',', '.')
-          const amount = parseFloat(amountStr)
-          if (amount > 0.01 && amount < 10000) { // Filtrer les montants raisonnables
-            amounts.push(amount)
+    // S'assurer que le pattern a le flag 'g' pour matchAll
+    let globalPattern: RegExp
+    if (pattern.global) {
+      globalPattern = pattern
+    } else {
+      // Ajouter le flag 'g' si absent, en préservant les autres flags
+      const flags = pattern.flags.includes('g') ? pattern.flags : pattern.flags + 'g'
+      globalPattern = new RegExp(pattern.source, flags)
+    }
+    
+    try {
+      const matches = Array.from(text.matchAll(globalPattern))
+      if (matches && matches.length > 0) {
+        for (const match of matches) {
+          let amountStr = ''
+          
+          // Gérer les groupes de capture multiples (pour formats avec espaces)
+          if (match[2]) {
+            // Format: 15 , 50
+            amountStr = `${match[1]}.${match[2]}`
+          } else if (match[1]) {
+            // Format standard: 15.50 ou 15,50
+            amountStr = match[1].replace(/\s+/g, '').replace(',', '.')
+          }
+          
+          if (amountStr) {
+            const amount = parseFloat(amountStr)
+            // Filtrer les montants raisonnables (entre 0.01€ et 10000€)
+            if (!isNaN(amount) && amount > 0.01 && amount < 10000) {
+              amounts.push(amount)
+              console.log(`  ✓ Montant trouvé: ${amount}€`)
+            }
+          }
+        }
+      }
+    } catch (error) {
+      // Si matchAll échoue, utiliser match à la place (fallback)
+      console.warn('⚠️ matchAll a échoué, utilisation de match:', error)
+      const matches = text.match(globalPattern)
+      if (matches) {
+        for (const match of Array.isArray(matches) ? matches : [matches]) {
+          if (typeof match === 'string') {
+            const amountMatch = match.match(/(\d+[,\.]\d{2})/) || match.match(/(\d+)\s*[,\.]\s*(\d{2})/)
+            if (amountMatch) {
+              const amountStr = amountMatch[2] 
+                ? `${amountMatch[1]}.${amountMatch[2]}` 
+                : amountMatch[1].replace(',', '.')
+              const amount = parseFloat(amountStr)
+              if (!isNaN(amount) && amount > 0.01 && amount < 10000) {
+                amounts.push(amount)
+                console.log(`  ✓ Montant trouvé (fallback): ${amount}€`)
+              }
+            }
           }
         }
       }
@@ -57,7 +116,9 @@ function extractAmount(text: string): number {
   }
 
   // Retourner le montant le plus élevé (souvent le total)
-  return amounts.length > 0 ? Math.max(...amounts) : 0
+  const maxAmount = amounts.length > 0 ? Math.max(...amounts) : 0
+  console.log(`💰 Montant final extrait: ${maxAmount}€ (parmi ${amounts.length} montants trouvés)`)
+  return maxAmount
 }
 
 /**
@@ -114,22 +175,42 @@ function extractDate(text: string): string {
 }
 
 /**
- * Extrait le nom du marchand/fournisseur
+ * Extrait le nom du marchand/fournisseur (amélioré pour restaurants français)
  */
 function extractMerchant(text: string): string {
+  console.log('🏪 Extraction du nom du marchand depuis:', text.substring(0, 300))
+  
   const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0)
   
+  // Mots-clés à ignorer (ne sont pas des noms de commerces)
+  const skipKeywords = [
+    'ticket', 'facture', 'reçu', 'total', 'tva', 'cb', 'carte', 'bancaire',
+    'merci', 'visite', 'client', 'date', 'heure', 'table', 'serveur',
+    'addition', 'sans contact', 'chip', 'pin', 'approuve', 'approuvé',
+    'terminal', 'transaction', 'numero', 'n°', 'ref', 'reference'
+  ]
+  
+  // Patterns à ignorer
+  const skipPatterns = [
+    /^\d+[,\.]\d{2}\s*€?$/,           // Ligne avec juste un prix
+    /^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}$/,  // Ligne avec juste une date
+    /^\d{1,2}[hH:]\d{2}$/,            // Ligne avec juste une heure
+    /^TOTAL/i,                         // Ligne commençant par TOTAL
+    /^TVA/i,                           // Ligne commençant par TVA
+    /^CB\s|^CARTE/i,                   // Ligne commençant par CB ou CARTE
+  ]
+  
   // Chercher dans les premières lignes (souvent le nom du commerce)
-  for (let i = 0; i < Math.min(5, lines.length); i++) {
+  // On regarde les 8 premières lignes pour être plus flexible
+  for (let i = 0; i < Math.min(8, lines.length); i++) {
     const line = lines[i]
     
-    // Ignorer les lignes avec des prices, dates, ou mots-clés communs
-    const skipPatterns = [
-      /\d+[,\.]\d{2}/,  // Prix
-      /\d{2}[/\-\.]\d{2}/,  // Dates
-      /(ticket|facture|reçu|total|tva|cb|carte)/i,  // Mots-clés communs
-    ]
+    // Ignorer les lignes vides ou trop courtes
+    if (line.length < 3 || line.length > 60) {
+      continue
+    }
     
+    // Vérifier les patterns à ignorer
     let shouldSkip = false
     for (const pattern of skipPatterns) {
       if (pattern.test(line)) {
@@ -138,17 +219,60 @@ function extractMerchant(text: string): string {
       }
     }
     
-    if (!shouldSkip && line.length > 3 && line.length < 50) {
-      // Nettoyer et retourner le nom probable du marchand
-      const merchant = line.replace(/[^\w\s\-\']/g, ' ').replace(/\s+/g, ' ').trim()
-      if (merchant) {
-        return merchant.split(' ').map(word => 
-          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        ).join(' ')
+    if (shouldSkip) continue
+    
+    // Vérifier les mots-clés à ignorer
+    const lineLower = line.toLowerCase()
+    for (const keyword of skipKeywords) {
+      if (lineLower.includes(keyword)) {
+        shouldSkip = true
+        break
       }
+    }
+    
+    if (shouldSkip) continue
+    
+    // Vérifier si la ligne contient principalement du texte (pas trop de chiffres)
+    const digitCount = (line.match(/\d/g) || []).length
+    const digitRatio = digitCount / line.length
+    
+    // Si plus de 30% de chiffres, probablement pas un nom de commerce
+    if (digitRatio > 0.3) {
+      continue
+    }
+    
+    // Nettoyer le nom du marchand
+    let merchant = line
+      .replace(/[^\w\s\-\'àáâãäåèéêëìíîïòóôõöùúûüýÿç]/gi, ' ') // Garder lettres, espaces, tirets, apostrophes
+      .replace(/\s+/g, ' ')  // Remplacer espaces multiples par un seul
+      .trim()
+    
+    // Vérifier que le nom nettoyé est valide
+    if (merchant && merchant.length >= 3 && merchant.length <= 50) {
+      // Capitaliser correctement (première lettre de chaque mot en majuscule)
+      merchant = merchant.split(' ')
+        .map(word => {
+          if (word.length === 0) return ''
+          // Gérer les mots avec apostrophes (ex: "L'Atelier")
+          if (word.includes("'")) {
+            return word.split("'")
+              .map((part, idx) => 
+                idx === 0 
+                  ? part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+                  : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+              )
+              .join("'")
+          }
+          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        })
+        .join(' ')
+      
+      console.log(`  ✓ Nom du marchand trouvé: "${merchant}" (ligne ${i + 1})`)
+      return merchant
     }
   }
   
+  console.log('  ⚠ Aucun nom de marchand trouvé')
   return "Marchand inconnu"
 }
 
@@ -221,52 +345,142 @@ function calculateConfidence(data: Partial<ExtractedExpenseData>): number {
 }
 
 /**
- * Fonction OCR simplifiée (placeholder pour test)
- * TODO: Remplacer par vraie OCR plus tard
+ * Fonction OCR réelle utilisant Tesseract.js
+ * Lit vraiment le texte des images de tickets de caisse
  */
 async function performOCR(imageBase64: string): Promise<string> {
-  // Simuler un délai OCR
-  await new Promise(resolve => setTimeout(resolve, 2000))
-  
-  // Pour l'instant, retourner du texte simulé basé sur timestamp pour garantir l'unicité
-  const timestamp = Date.now()
-  const randomAmount = (Math.random() * 50 + 10).toFixed(2)
-  const merchants = ['Restaurant Le Bistrot', 'Taxi Express', 'Hotel Central', 'Pharmacie Martin', 'Supermarché U']
-  const randomMerchant = merchants[Math.floor(Math.random() * merchants.length)]
-  
-  console.log(`🎲 Génération données simulées [${timestamp}]: ${randomMerchant} - ${randomAmount}€`)
-  
-  return `
-    ${randomMerchant}
+  // Vérifier que nous sommes côté client
+  if (typeof window === 'undefined') {
+    throw new Error('OCR doit être exécuté côté client (navigateur)')
+  }
+
+  try {
+    console.log('🔍 Démarrage OCR réel avec Tesseract.js...')
     
-    Ticket de caisse
-    Date: ${new Date().toLocaleDateString('fr-FR')}
+    // Importer Tesseract dynamiquement (client-side seulement)
+    const Tesseract = await import('tesseract.js')
+    const { createWorker } = Tesseract
     
-    TOTAL: ${randomAmount}€
+    // Créer un worker Tesseract avec langues français et anglais
+    console.log('⚙️ Initialisation du worker Tesseract...')
+    const worker = await createWorker('fra+eng', 1, {
+      logger: (m) => {
+        if (m.status === 'recognizing text') {
+          const progress = Math.round(m.progress * 100)
+          console.log(`📖 OCR en cours: ${progress}%`)
+        } else if (m.status === 'loading tesseract core') {
+          console.log('📦 Chargement du core Tesseract...')
+        } else if (m.status === 'initializing tesseract') {
+          console.log('🔧 Initialisation de Tesseract...')
+        } else if (m.status === 'loading language traineddata') {
+          console.log('🌐 Chargement des données linguistiques...')
+        }
+      }
+    })
     
-    Merci de votre visite
-    CB SANS CONTACT
-  `
+    // Convertir base64 en blob pour Tesseract
+    console.log('🖼️ Conversion de l\'image...')
+    const base64Data = imageBase64.replace(/^data:image\/[a-z]+;base64,/, '')
+    const byteCharacters = atob(base64Data)
+    const byteNumbers = new Array(byteCharacters.length)
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i)
+    }
+    const byteArray = new Uint8Array(byteNumbers)
+    const blob = new Blob([byteArray], { type: 'image/jpeg' })
+    
+    // Effectuer la reconnaissance OCR
+    console.log('📸 Analyse OCR de l\'image en cours...')
+    const { data: { text } } = await worker.recognize(blob)
+    
+    // Nettoyer le texte extrait
+    const cleanedText = text.trim()
+    
+    console.log('✅ OCR terminé!')
+    console.log('📝 Texte extrait (premiers 300 caractères):', cleanedText.substring(0, 300))
+    console.log('📊 Longueur totale:', cleanedText.length, 'caractères')
+    
+    // Terminer le worker pour libérer les ressources
+    await worker.terminate()
+    
+    if (!cleanedText || cleanedText.length < 10) {
+      throw new Error('Texte OCR trop court ou vide. L\'image est peut-être floue, mal éclairée, ou ne contient pas de texte lisible.')
+    }
+    
+    return cleanedText
+  } catch (error) {
+    console.error('❌ Erreur OCR détaillée:', error)
+    
+    // Messages d'erreur plus spécifiques
+    let errorMessage = 'Erreur lors de la lecture OCR'
+    
+    if (error instanceof Error) {
+      if (error.message.includes('network') || error.message.includes('fetch')) {
+        errorMessage = 'Erreur de connexion lors du téléchargement des modèles OCR. Vérifiez votre connexion internet.'
+      } else if (error.message.includes('worker')) {
+        errorMessage = 'Erreur lors de l\'initialisation de l\'OCR. Réessayez dans quelques instants.'
+      } else {
+        errorMessage = error.message
+      }
+    }
+    
+    throw new Error(
+      `${errorMessage}. ` +
+      `Assurez-vous que l'image est claire, bien éclairée et contient du texte lisible. ` +
+      `Si le problème persiste, vérifiez votre connexion internet.`
+    )
+  }
 }
 
 /**
  * Fonction principale pour traiter le contenu d'une dépense
- * Utilise vraiment l'OCR maintenant
+ * Essaie d'abord l'IA Vision si disponible, sinon utilise l'OCR
  */
 export async function processExpenseContent(
   imageBase64?: string, 
   textContent?: string
 ): Promise<ExtractedExpenseData> {
   
+  // Si on a une image et qu'on est côté serveur, essayer l'IA Vision d'abord
+  if (imageBase64 && typeof window === 'undefined') {
+    try {
+      const { extractWithAIVision } = await import('./ai-vision')
+      const aiResult = await extractWithAIVision(imageBase64)
+      
+      if (aiResult) {
+        console.log('✅ Données extraites par IA Vision:', aiResult)
+        return aiResult
+      }
+    } catch (error) {
+      console.warn('⚠️ Erreur avec IA Vision, fallback sur OCR:', error)
+      // Continue avec OCR
+    }
+  }
+  
   let rawText = ''
   
   if (textContent) {
     rawText = textContent
   } else if (imageBase64) {
-    // Utilisation de l'OCR simulé
-    console.log('🔍 Début OCR de l\'image...')
-    rawText = await performOCR(imageBase64)
-    console.log('📝 Texte OCR extrait:', rawText)
+    // Utilisation de l'OCR réel avec Tesseract.js (côté client uniquement)
+    if (typeof window === 'undefined') {
+      throw new Error('OCR doit être exécuté côté client. Utilisez l\'API /api/process-image pour l\'IA Vision côté serveur.')
+    }
+    
+    console.log('🔍 Début OCR réel de l\'image...')
+    try {
+      rawText = await performOCR(imageBase64)
+      console.log('📝 Texte OCR extrait (premiers 500 caractères):', rawText.substring(0, 500))
+      
+      if (!rawText || rawText.trim().length < 10) {
+        throw new Error('Le texte extrait est trop court. L\'image est peut-être floue ou ne contient pas de texte lisible.')
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'OCR:', error)
+      throw new Error(
+        `Impossible de lire le texte du ticket. ${error instanceof Error ? error.message : 'Vérifiez que l\'image est claire et contient du texte lisible.'}`
+      )
+    }
   } else {
     throw new Error("Aucun contenu fourni (image ou texte)")
   }
@@ -275,12 +489,27 @@ export async function processExpenseContent(
     throw new Error("Aucun texte extrait du contenu")
   }
   
+  // Afficher le texte brut pour débogage
+  console.log('📄 Texte brut complet extrait par OCR:')
+  console.log('─'.repeat(60))
+  console.log(rawText)
+  console.log('─'.repeat(60))
+  
   // Extraire les informations
+  console.log('🔍 Début de l\'extraction des données...')
   const amount = extractAmount(rawText)
   const date = extractDate(rawText)
   const merchant = extractMerchant(rawText)
   const description = extractDescription(rawText)
   const category = categorizeExpense(merchant, description)
+  
+  // Afficher les résultats de l'extraction
+  console.log('📊 Résultats de l\'extraction:')
+  console.log(`  • Montant: ${amount}€`)
+  console.log(`  • Date: ${date}`)
+  console.log(`  • Marchand: ${merchant}`)
+  console.log(`  • Description: ${description}`)
+  console.log(`  • Catégorie: ${category}`)
   
   // Préparer les données
   const extractedData: Partial<ExtractedExpenseData> = {
@@ -294,6 +523,7 @@ export async function processExpenseContent(
   
   // Calculer le score de confiance
   const confidence = calculateConfidence(extractedData)
+  console.log(`  • Confiance: ${Math.round(confidence * 100)}%`)
   
   return {
     ...extractedData,
