@@ -3,8 +3,8 @@
 	"short_name": "Billz",
 	"description": "Application de gestion des notes de frais Billz",
 	"lang": "fr-FR",
-	"id": "/",
-	"start_url": "/?source=pwa",
+	"id": "/whatsapp",
+	"start_url": "/whatsapp?source=pwa",
 	"scope": "/",
 	"display": "standalone",
 	"display_override": ["standalone", "window-controls-overlay"],
@@ -37,7 +37,7 @@
 			"name": "Nouvelle facture",
 			"short_name": "Nouvelle",
 			"description": "Créer une nouvelle facture carte",
-			"url": "/?action=new"
+			"url": "/whatsapp?action=new"
 		}
 	]
 }
