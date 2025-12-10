@@ -1,0 +1,9 @@
+{
+  "name": "billz-local-deps",
+  "description": "Dépendances optionnelles pour le service WhatsApp local (whatsapp-bot-service.js)",
+  "dependencies": {
+    "whatsapp-web.js": "^1.34.2",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
+
