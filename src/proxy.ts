@@ -1,4 +1,4 @@
-// TEMPORAIRE - Middleware Clerk désactivé pour test
+// TEMPORAIRE - Proxy Clerk désactivé pour test
 // import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
 // const isProtectedRoute = createRouteMatcher([
@@ -12,8 +12,8 @@
 //   }
 // })
 
-// Middleware temporaire vide
-export default function middleware() {
+// Proxy temporaire vide
+export default function proxy() {
   // Pass through all requests without authentication
 }
 
@@ -25,3 +25,4 @@ export const config = {
     '/(api|trpc)(.*)',
   ],
 }
+
