@@ -1,5 +1,11 @@
 {
   "installCommand": "npm install",
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/whatsapp"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
