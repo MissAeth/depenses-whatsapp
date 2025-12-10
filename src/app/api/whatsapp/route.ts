@@ -215,15 +215,34 @@ export async function GET(req: NextRequest) {
 
       if (!verifyToken) {
         console.warn('⚠️ WHATSAPP_VERIFY_TOKEN non configuré, webhook Meta non vérifié')
-        return new NextResponse('Verify token not configured', { status: 403 })
+        return new NextResponse('Verify token not configured', { 
+          status: 403,
+          headers: {
+            'Content-Type': 'text/plain',
+          }
+        })
       }
 
       if (token === verifyToken) {
         console.log('✅ Webhook Meta vérifié avec succès')
-        return new NextResponse(challenge, { status: 200 })
+        console.log('📋 Challenge reçu:', challenge)
+        // Meta attend le challenge en texte brut, sans JSON
+        return new NextResponse(challenge || '', { 
+          status: 200,
+          headers: {
+            'Content-Type': 'text/plain',
+          }
+        })
       } else {
         console.warn('❌ Token de vérification invalide')
-        return new NextResponse('Invalid verify token', { status: 403 })
+        console.warn('   Token reçu:', token)
+        console.warn('   Token attendu:', verifyToken)
+        return new NextResponse('Invalid verify token', { 
+          status: 403,
+          headers: {
+            'Content-Type': 'text/plain',
+          }
+        })
       }
     }
 
