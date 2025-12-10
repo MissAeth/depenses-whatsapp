@@ -5,8 +5,8 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Factures carte procurement SGDF',
-  description: "Application de gestion des factures carte procurement pour SGDF La Guillotière",
+  title: 'Billz',
+  description: "Application de gestion des notes de frais Billz",
   manifest: '/manifest.json',
 }
 
@@ -32,10 +32,10 @@ export default function RootLayout({
         <meta name="theme-color" content="#18181B" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Notes SGDF" />
+        <meta name="apple-mobile-web-app-title" content="Billz" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/SGDF_symbole_RVB.png" />
+        <link rel="icon" href="/billz-logo.png" />
+        <link rel="apple-touch-icon" href="/billz-logo.png" />
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-sans">

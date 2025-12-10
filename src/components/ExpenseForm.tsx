@@ -12,6 +12,13 @@ interface ExpenseFormProps {
   readonly onPersistBranch?: (branch: string) => Promise<void> | void
   readonly onCreateNewNote?: () => void
   readonly onBranchChange?: (branch: string) => void
+  readonly importedData?: {
+    amount?: number
+    merchant?: string
+    category?: string
+    description?: string
+    date?: string
+  } | null
 }
 
 // Catégories de dépenses personnelles
@@ -26,13 +33,13 @@ const EXPENSE_CATEGORIES = [
   'Divers'
 ]
 
-export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange, isOnline = true }: ExpenseFormProps & { isOnline?: boolean }) {
+export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange, isOnline = true, importedData = null }: ExpenseFormProps & { isOnline?: boolean }) {
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split('T')[0],
-    branch: initialBranch || '',
+    date: importedData?.date || new Date().toISOString().split('T')[0],
+    branch: importedData?.category || initialBranch || '',
     expenseType: '',
-    amount: '',
-    description: ''
+    amount: importedData?.amount ? importedData.amount.toString() : '',
+    description: importedData?.description || ''
   })
   const [branchPersistStatus, setBranchPersistStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
@@ -45,6 +52,48 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
   const [aiProcessing, setAiProcessing] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<ExtractedExpenseData | null>(null)
   const [aiError, setAiError] = useState<string | null>(null)
+
+  // Si des données sont importées, pré-remplir le formulaire
+  useEffect(() => {
+    if (importedData) {
+      console.log('📥 Données importées détectées:', importedData)
+      setFormData(prev => ({
+        ...prev,
+        date: importedData.date || prev.date,
+        branch: importedData.category || prev.branch,
+        amount: importedData.amount ? importedData.amount.toString() : prev.amount,
+        description: importedData.description || prev.description
+      }))
+      
+      // Mapper le type de dépense si on a la catégorie
+      if (importedData.category && importedData.merchant) {
+        const mapCategoryToExpenseType = (category: string, merchant: string): string => {
+          const combined = `${merchant.toLowerCase()} ${importedData.description?.toLowerCase() || ''}`.toLowerCase()
+          
+          if (category === 'Restauration') {
+            if (combined.includes('restaurant') || combined.includes('resto') || combined.includes('café') || combined.includes('cafe') || combined.includes('bar')) {
+              return 'Restaurant, Bar, Café'
+            }
+            return 'Courses alimentaires'
+          }
+          if (category === 'Transport') {
+            if (combined.includes('taxi') || combined.includes('uber') || combined.includes('vtc')) return 'Taxi, VTC'
+            if (combined.includes('carburant') || combined.includes('essence') || combined.includes('péage')) return 'Carburant, Péage'
+            return 'Transport en commun'
+          }
+          if (category === 'Hébergement') return 'Hôtel, Hébergement'
+          if (category === 'Santé') return 'Médecin, Pharmacie'
+          if (category === 'Fournitures') return 'Fournitures bureau'
+          if (category === 'Abonnements') return 'Abonnement services'
+          if (category === 'Loisirs') return 'Loisirs, Culture'
+          return 'Autres'
+        }
+        
+        const expenseType = mapCategoryToExpenseType(importedData.category, importedData.merchant || '')
+        setFormData(prev => ({ ...prev, expenseType }))
+      }
+    }
+  }, [importedData])
 
   // Traiter l'image automatiquement avec l'IA quand une nouvelle image arrive
   useEffect(() => {

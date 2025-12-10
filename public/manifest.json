@@ -1,7 +1,7 @@
 {
-	"name": "Factures carte procurement SGDF",
-	"short_name": "Factures SGDF",
-	"description": "Application de gestion des factures carte procurement pour SGDF La Guillotière",
+	"name": "Billz",
+	"short_name": "Billz",
+	"description": "Application de gestion des notes de frais Billz",
 	"lang": "fr-FR",
 	"id": "/",
 	"start_url": "/?source=pwa",
@@ -16,20 +16,20 @@
 	"prefer_related_applications": false,
 	"icons": [
 		{
-			"src": "/SGDF_symbole_RVB.png",
+			"src": "/billz-logo.png",
 			"sizes": "512x512",
 			"type": "image/png"
 		},
 		{
-			"src": "/SGDF_symbole_blanc.png",
+			"src": "/billz-logo.png",
 			"sizes": "512x512",
 			"type": "image/png",
 			"purpose": "maskable any"
 		},
 		{
-			"src": "/favicon.ico",
-			"sizes": "48x48 32x32 16x16",
-			"type": "image/x-icon"
+			"src": "/billz-logo.png",
+			"sizes": "192x192",
+			"type": "image/png"
 		}
 	],
 	"shortcuts": [

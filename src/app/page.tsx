@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { ExpenseForm } from '@/components/ExpenseForm'
 import { PhotoCapture } from '@/components/PhotoCapture'
 import { useOnlineStatus } from '@/lib/useOnlineStatus'
 import { InstallPrompt } from '@/components/InstallPrompt'
-import Image from 'next/image'
 import { 
   HomeIcon, 
   DevicePhoneMobileIcon, 
@@ -16,18 +16,62 @@ import {
   DocumentTextIcon
 } from '@heroicons/react/24/outline'
 
-export default function Home() {
+function HomeContent() {
   // Mode démo pour test local
   const isSignedIn = true
   const user = { emailAddresses: [{ emailAddress: 'demo@example.com' }] }
   const isLoaded = true
   const isDemoMode = true
   
+  const searchParams = useSearchParams()
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
+  const [importedData, setImportedData] = useState<{
+    amount?: number
+    merchant?: string
+    category?: string
+    description?: string
+    date?: string
+  } | null>(null)
   const initialBranch = 'Groupe'
   const [activeBranch, setActiveBranch] = useState<string>(initialBranch)
   const [activeTab, setActiveTab] = useState<'home' | 'whatsapp'>('home')
   const isOnline = useOnlineStatus()
+  
+  // Détecter l'import d'une dépense WhatsApp
+  useEffect(() => {
+    const importParam = searchParams?.get('import')
+    if (importParam === 'whatsapp') {
+      const expenseData = sessionStorage.getItem('whatsappExpenseImport')
+      if (expenseData) {
+        try {
+          const expense = JSON.parse(expenseData)
+          console.log('📥 Import dépense WhatsApp:', expense)
+          
+          // Définir l'image si disponible
+          if (expense.imageBase64) {
+            setCapturedImage(expense.imageBase64)
+          }
+          
+          // Stocker les données importées
+          setImportedData({
+            amount: expense.amount,
+            merchant: expense.merchant,
+            category: expense.category,
+            description: expense.description,
+            date: expense.date
+          })
+          
+          // Nettoyer sessionStorage
+          sessionStorage.removeItem('whatsappExpenseImport')
+          
+          // Nettoyer l'URL
+          window.history.replaceState({}, '', '/')
+        } catch (error) {
+          console.error('Erreur import dépense WhatsApp:', error)
+        }
+      }
+    }
+  }, [searchParams])
 
   // Afficher un loader pendant le chargement
   if (!isLoaded && !isDemoMode) {
@@ -48,10 +92,8 @@ export default function Home() {
         <div className="max-w-md w-full mx-auto bg-white rounded-2xl border border-zinc-200 shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 text-white p-8 text-center">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <Image src="/SGDF_symbole_RVB.png" alt="SGDF" width={32} height={32} className="rounded-sm" />
-              <h1 className="text-2xl font-bold">Factures SGDF</h1>
+              <h1 className="text-2xl font-bold">Billz</h1>
             </div>
-            <p className="text-zinc-300 text-sm">La Guillotière</p>
           </div>
           <div className="p-8 text-center">
             <p className="text-zinc-600 mb-6">
@@ -73,11 +115,15 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white text-lg">💰</span>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg overflow-hidden bg-white">
+                <img 
+                  src="/billz-logo.png" 
+                  alt="Billz Logo" 
+                  className="w-full h-full object-contain p-1"
+                />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-zinc-900">Mes Dépenses</h1>
+                <h1 className="text-xl font-bold text-zinc-900">Billz</h1>
                 <p className="text-xs text-zinc-500 flex items-center gap-1">
                   {isOnline ? (
                     <>
@@ -150,8 +196,10 @@ export default function Home() {
                   capturedImage={capturedImage}
                   userEmail={isDemoMode ? 'demo@example.com' : user?.emailAddresses[0]?.emailAddress || ''}
                   initialBranch={isDemoMode ? 'Groupe' : initialBranch}
+                  importedData={importedData}
                   onCreateNewNote={() => {
                     setCapturedImage(null)
+                    setImportedData(null)
                   }}
                   onPersistBranch={isDemoMode ? undefined : async (branch: string) => {
                     try {
@@ -212,5 +260,20 @@ export default function Home() {
 
       <InstallPrompt />
     </main>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen p-4 flex items-center justify-center bg-gradient-to-br from-zinc-50 via-white to-zinc-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900 mx-auto mb-4"></div>
+          <div className="text-zinc-600 text-sm">Chargement…</div>
+        </div>
+      </main>
+    }>
+      <HomeContent />
+    </Suspense>
   )
 }
