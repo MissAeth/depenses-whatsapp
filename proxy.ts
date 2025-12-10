@@ -1,5 +1,7 @@
 // TEMPORAIRE - Proxy Clerk désactivé pour test
 // import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 // const isProtectedRoute = createRouteMatcher([
 //   '/',
@@ -12,9 +14,15 @@
 //   }
 // })
 
-// Proxy temporaire vide
-export default function proxy() {
-  // Pass through all requests without authentication
+// Proxy avec redirection de / vers /whatsapp
+export default function proxy(request: NextRequest) {
+  // Rediriger la page principale vers /whatsapp
+  if (request.nextUrl.pathname === '/') {
+    return NextResponse.redirect(new URL('/whatsapp', request.url))
+  }
+  
+  // Pass through all other requests without authentication
+  return NextResponse.next()
 }
 
 export const config = {
