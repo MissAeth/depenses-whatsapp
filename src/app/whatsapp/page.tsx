@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { DevicePhoneMobileIcon, PaperAirplaneIcon, EyeIcon, ArrowPathIcon, ArrowDownTrayIcon, PhotoIcon, DocumentTextIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { DevicePhoneMobileIcon, PaperAirplaneIcon, EyeIcon, ArrowPathIcon, PhotoIcon, DocumentTextIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
 interface WhatsAppExpense {
   id: string
@@ -26,7 +24,6 @@ interface Toast {
 }
 
 export default function WhatsAppPage() {
-  const router = useRouter()
   const [expenses, setExpenses] = useState<WhatsAppExpense[]>([])
   const [loading, setLoading] = useState(false)
   const [sending, setSending] = useState(false)
@@ -218,27 +215,6 @@ export default function WhatsAppPage() {
     }
   }
 
-  const importExpenseToForm = (expense: WhatsAppExpense) => {
-    // Stocker les données dans sessionStorage pour les récupérer sur la page principale
-    const expenseData = {
-      id: expense.id,
-      amount: expense.amount,
-      merchant: expense.merchant,
-      category: expense.category,
-      description: expense.description,
-      date: expense.received_at ? new Date(expense.received_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      imageBase64: (expense as any).imageBase64 || null,
-      source: 'whatsapp'
-    }
-    
-    sessionStorage.setItem('whatsappExpenseImport', JSON.stringify(expenseData))
-    showToast('✅ Redirection vers le formulaire...', 'success')
-    
-    // Rediriger vers la page principale
-    setTimeout(() => {
-      router.push('/?import=whatsapp')
-    }, 500)
-  }
 
   const formatTimeAgo = (date: Date) => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000)
@@ -293,14 +269,6 @@ export default function WhatsAppPage() {
         <div className="max-w-5xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link
-                href="/"
-                className="w-11 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-md group"
-              >
-                <svg className="w-5 h-5 text-slate-700 group-hover:translate-x-[-2px] transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-              </Link>
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-1.5 ring-2 ring-amber-300/50 border border-amber-200/30">
                 <img 
                   src="/billz-logo.png" 
@@ -632,17 +600,6 @@ export default function WhatsAppPage() {
                       </p>
                     </div>
                   )}
-                  
-                  {/* Bouton Importer - Design moderne */}
-                  <div className="mt-6 flex justify-end">
-                    <button
-                      onClick={() => importExpenseToForm(expense)}
-                      className="flex items-center gap-2.5 px-6 py-3.5 backdrop-blur-sm bg-gradient-to-r from-blue-500/90 to-indigo-500/90 hover:from-blue-600 hover:to-indigo-600 text-white rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 font-black text-sm border border-blue-400/30"
-                    >
-                      <ArrowDownTrayIcon className="w-5 h-5" />
-                      Importer dans le formulaire
-                    </button>
-                  </div>
                 </div>
               ))
             )}
