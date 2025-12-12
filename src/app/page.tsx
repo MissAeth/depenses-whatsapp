@@ -55,19 +55,13 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50/40 flex items-center justify-center p-6">
-      {/* Effets de fond animés */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
-
-      <div className="relative z-10 w-full max-w-md mx-4 md:mx-auto">
+    <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-6">
+      <div className="w-full max-w-md mx-4 md:mx-auto">
         {/* Card de connexion */}
-        <div className="backdrop-blur-xl bg-gradient-to-br from-slate-800/90 via-slate-800/80 to-slate-900/90 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-700/50 p-6 md:p-8 ring-1 ring-white/10">
+        <div className="bg-white rounded-lg border border-zinc-200 shadow-sm p-6 md:p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-1.5 md:p-2 ring-2 ring-blue-400/50 border border-blue-300/30 mx-auto mb-3 md:mb-4">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-lg flex items-center justify-center overflow-hidden bg-zinc-900 p-1.5 md:p-2 mx-auto mb-3 md:mb-4">
               <img 
                 src="/smart-expense-logo.jpg?v=1" 
                 alt="Smart Expense Logo" 
@@ -78,15 +72,20 @@ export default function HomePage() {
                   const target = e.target as HTMLImageElement
                   target.style.display = 'none'
                   if (target.parentElement) {
-                    target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-700"><span class="text-white text-2xl md:text-3xl font-black">SE</span></div>'
+                    target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-zinc-900"><span class="text-white text-2xl md:text-3xl font-black">SE</span></div>'
                   }
                 }}
               />
             </div>
-            <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-400 to-white mb-2">
-              Connexion
-            </h1>
-            <p className="text-xs md:text-sm text-slate-300 font-medium">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <div className="w-7 h-7 bg-zinc-900 rounded flex items-center justify-center">
+                <span className="text-white text-sm">💰</span>
+              </div>
+              <h1 className="text-2xl md:text-3xl font-semibold text-zinc-900">
+                SmartExpense
+              </h1>
+            </div>
+            <p className="text-sm text-zinc-500">
               Accédez à votre espace de gestion des dépenses
             </p>
           </div>
@@ -95,12 +94,12 @@ export default function HomePage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Champ Username */}
             <div>
-              <label htmlFor="username" className="block text-sm font-bold text-white mb-2">
+              <label htmlFor="username" className="block text-sm font-medium text-zinc-900 mb-2">
                 Nom d'utilisateur
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <UserIcon className="h-5 w-5 text-slate-400" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <UserIcon className="h-5 w-5 text-zinc-400" />
                 </div>
                 <input
                   id="username"
@@ -108,7 +107,7 @@ export default function HomePage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
-                  className="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-3 md:py-3.5 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-xl md:rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium text-sm md:text-base"
+                  className="w-full pl-10 pr-3 md:pr-4 py-3 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 transition-colors text-zinc-900 placeholder:text-zinc-400 text-sm md:text-base"
                   placeholder="Entrez votre nom d'utilisateur"
                   disabled={loading}
                 />
@@ -117,12 +116,12 @@ export default function HomePage() {
 
             {/* Champ Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-bold text-white mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-zinc-900 mb-2">
                 Mot de passe
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <LockClosedIcon className="h-5 w-5 text-slate-400" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <LockClosedIcon className="h-5 w-5 text-zinc-400" />
                 </div>
                 <input
                   id="password"
@@ -130,7 +129,7 @@ export default function HomePage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-3 md:py-3.5 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-xl md:rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium text-sm md:text-base"
+                  className="w-full pl-10 pr-3 md:pr-4 py-3 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 transition-colors text-zinc-900 placeholder:text-zinc-400 text-sm md:text-base"
                   placeholder="Entrez votre mot de passe"
                   disabled={loading}
                 />
@@ -139,7 +138,7 @@ export default function HomePage() {
 
             {/* Message d'erreur */}
             {error && (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-red-900/40 to-rose-900/40 border-2 border-red-500/60 text-red-100 text-sm font-medium backdrop-blur-sm">
+              <div className="p-3 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-sm">
                 {error}
               </div>
             )}
@@ -148,7 +147,7 @@ export default function HomePage() {
             <button
               type="submit"
               disabled={loading || !username || !password}
-              className="w-full py-3 md:py-4 bg-gradient-to-r from-blue-600/80 to-blue-700/80 hover:from-blue-700/90 hover:to-blue-800/90 text-white rounded-xl md:rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl font-black text-xs md:text-sm hover:scale-105 disabled:transform-none border border-blue-400/30 ring-1 ring-blue-300/20 flex items-center justify-center gap-2"
+              className="w-full py-3 md:py-4 bg-zinc-900 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 font-medium text-sm md:text-base flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -168,9 +167,9 @@ export default function HomePage() {
           </form>
 
           {/* Informations de test */}
-          <div className="mt-6 p-4 rounded-2xl backdrop-blur-sm bg-slate-700/30 border border-slate-600/50">
-            <p className="text-xs text-slate-400 font-medium text-center">
-              Compte de test : <span className="text-blue-400 font-bold">compte-test</span> / <span className="text-blue-400 font-bold">test1234</span>
+          <div className="mt-6 p-3 rounded-md bg-zinc-50 border border-zinc-200">
+            <p className="text-xs text-zinc-600 text-center">
+              Compte de test : <span className="text-zinc-900 font-semibold">compte-test</span> / <span className="text-zinc-900 font-semibold">test1234</span>
             </p>
           </div>
         </div>
