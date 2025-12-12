@@ -83,27 +83,34 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen p-4 bg-zinc-50">
-      <div className="max-w-5xl mx-auto">
+    <main className="min-h-screen p-4 relative">
+      {/* Effets de fond animés */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      </div>
+
+      <div className="max-w-5xl mx-auto relative z-10">
         {/* Auth Banner */}
         {userPhone && (
-          <div className="mb-4 bg-white border border-zinc-200 rounded-lg shadow-sm p-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-zinc-600">
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mb-4 backdrop-blur-xl bg-white/70 border border-blue-200/50 rounded-xl shadow-lg p-3 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-blue-700">
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span>Connecté en tant que <strong className="text-zinc-900">{userPhone}</strong></span>
+              <span>Connecté en tant que <strong className="text-blue-900">{userPhone}</strong></span>
             </div>
             <div className="flex items-center gap-2">
               <a
                 href="/account"
-                className="px-3 py-1.5 text-sm text-zinc-700 hover:text-zinc-900 border border-zinc-300 rounded-md hover:bg-zinc-50 transition-colors"
+                className="px-3 py-1.5 text-sm text-blue-700 hover:text-blue-900 border border-blue-300/50 rounded-lg hover:bg-blue-50/50 backdrop-blur-sm transition-all"
               >
                 Mon compte
               </a>
               <button
                 onClick={handleLogout}
-                className="px-3 py-1.5 text-sm text-zinc-700 hover:text-zinc-900 border border-zinc-300 rounded-md hover:bg-zinc-50 transition-colors"
+                className="px-3 py-1.5 text-sm text-blue-700 hover:text-blue-900 border border-blue-300/50 rounded-lg hover:bg-blue-50/50 backdrop-blur-sm transition-all"
               >
                 Déconnexion
               </button>
@@ -111,8 +118,8 @@ export default function Home() {
           </div>
         )}
 
-        <div className="bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
-          <div className="bg-white p-6 border-b border-zinc-200">
+        <div className="backdrop-blur-xl bg-white/80 rounded-xl border border-blue-200/50 shadow-xl overflow-hidden">
+          <div className="backdrop-blur-sm bg-gradient-to-r from-blue-50/50 to-blue-100/30 p-6 border-b border-blue-200/30">
             <div className="flex justify-between items-center">
             <div>
               <div className="flex items-center gap-2">
@@ -129,18 +136,18 @@ export default function Home() {
                     }}
                   />
                 </div>
-                <h1 className="text-2xl font-semibold text-zinc-900">SmartExpense</h1>
+                <h1 className="text-2xl font-semibold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">SmartExpense</h1>
               </div>
-              <p className="text-zinc-500 mt-2">Gestion intelligente avec IA Gemini</p>
+              <p className="text-blue-600/80 mt-2">Gestion intelligente avec IA Gemini</p>
             </div>
-            <div className="inline-flex rounded-lg border border-zinc-300 bg-white overflow-hidden">
-              <button id="tab-expenses" onClick={() => setActiveTab('expenses')} className={`px-4 py-2 text-sm ${activeTab === 'expenses' ? 'bg-zinc-900 text-white' : 'text-zinc-700 hover:bg-zinc-100'}`}>Dépenses</button>
-              <button onClick={() => setActiveTab('analytics')} className={`px-4 py-2 text-sm ${activeTab === 'analytics' ? 'bg-zinc-900 text-white' : 'text-zinc-700 hover:bg-zinc-100'}`}>Analytics</button>
+            <div className="inline-flex rounded-lg border border-blue-300/50 bg-white/50 backdrop-blur-sm overflow-hidden shadow-sm">
+              <button id="tab-expenses" onClick={() => setActiveTab('expenses')} className={`px-4 py-2 text-sm transition-all ${activeTab === 'expenses' ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md' : 'text-blue-700 hover:bg-blue-50/50'}`}>Dépenses</button>
+              <button onClick={() => setActiveTab('analytics')} className={`px-4 py-2 text-sm transition-all ${activeTab === 'analytics' ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md' : 'text-blue-700 hover:bg-blue-50/50'}`}>Analytics</button>
             </div>
           </div>
         </div>
         
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 bg-white/40 backdrop-blur-sm">
           {activeTab === 'expenses' && (
             <div className="space-y-6">
               {/* Formulaire de capture et création de dépense */}

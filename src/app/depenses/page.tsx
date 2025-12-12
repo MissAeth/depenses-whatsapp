@@ -135,29 +135,40 @@ export default function ExpensesPage() {
   // Afficher un loader pendant la vérification de l'authentification
   if (checkingAuth) {
     return (
-      <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-zinc-600 font-medium">Vérification de l'authentification...</p>
+      <div className="min-h-screen flex items-center justify-center relative">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+        <div className="text-center relative z-10">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-blue-700 font-medium">Vérification de l'authentification...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <main className="min-h-screen bg-zinc-50 p-4">
-      <div className="max-w-5xl mx-auto">
+    <main className="min-h-screen p-4 relative">
+      {/* Effets de fond animés */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      </div>
+
+      <div className="max-w-5xl mx-auto relative z-10">
         {/* Système de notifications Toast */}
         <div className="fixed top-20 right-4 md:right-24 left-4 md:left-auto z-50 space-y-3 max-w-sm md:max-w-md">
           {toasts.map((toast) => (
             <div
               key={toast.id}
-              className={`bg-white rounded-lg border shadow-sm p-4 min-w-[300px] max-w-md ${
+              className={`backdrop-blur-xl rounded-xl border shadow-xl p-4 min-w-[300px] max-w-md ${
                 toast.type === 'success'
-                  ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+                  ? 'border-emerald-200/50 bg-emerald-50/80 text-emerald-900'
                   : toast.type === 'error'
-                  ? 'border-rose-200 bg-rose-50 text-rose-900'
-                  : 'border-zinc-200 text-zinc-700'
+                  ? 'border-rose-200/50 bg-rose-50/80 text-rose-900'
+                  : 'border-blue-200/50 bg-white/80 text-blue-700'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -166,8 +177,8 @@ export default function ExpensesPage() {
                 ) : toast.type === 'error' ? (
                   <XCircleIcon className="w-6 h-6 text-rose-600 flex-shrink-0" />
                 ) : (
-                  <div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0">
-                    <div className="w-2 h-2 rounded-full bg-zinc-600"></div>
+                  <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <div className="w-2 h-2 rounded-full bg-blue-600"></div>
                   </div>
                 )}
                 <p className="font-medium text-sm flex-1">{toast.message}</p>
@@ -177,8 +188,8 @@ export default function ExpensesPage() {
         </div>
 
         {/* Header */}
-        <div className="bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden mb-6">
-          <div className="bg-white p-6 border-b border-zinc-200">
+        <div className="backdrop-blur-xl bg-white/80 rounded-xl border border-blue-200/50 shadow-xl overflow-hidden mb-6">
+          <div className="backdrop-blur-sm bg-gradient-to-r from-blue-50/50 to-blue-100/30 p-6 border-b border-blue-200/30">
             <div className="flex justify-between items-center">
               <div>
                 <div className="flex items-center gap-2">
@@ -195,9 +206,9 @@ export default function ExpensesPage() {
                       }}
                     />
                   </div>
-                  <h1 className="text-2xl font-semibold text-zinc-900">SmartExpense</h1>
+                  <h1 className="text-2xl font-semibold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">SmartExpense</h1>
                 </div>
-                <p className="text-zinc-500 mt-2">
+                <p className="text-blue-600/80 mt-2">
                   Gestion des notes de frais
                   {isRefreshing && <span className="ml-2 animate-pulse">🔄</span>}
                 </p>
@@ -205,7 +216,7 @@ export default function ExpensesPage() {
               <button
                 onClick={() => loadExpenses()}
                 disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 text-sm bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
               >
                 <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                 Actualiser
@@ -215,13 +226,13 @@ export default function ExpensesPage() {
         </div>
 
         {/* Liste des dépenses */}
-        <div ref={expensesRef} className="bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-zinc-200">
+        <div ref={expensesRef} className="backdrop-blur-xl bg-white/80 rounded-xl border border-blue-200/50 shadow-xl overflow-hidden">
+          <div className="backdrop-blur-sm bg-blue-50/30 p-6 border-b border-blue-200/30">
             <div className="flex items-center gap-3">
-              <EyeIcon className="w-6 h-6 text-zinc-700" />
+              <EyeIcon className="w-6 h-6 text-blue-700" />
               <div>
-                <h2 className="text-lg font-semibold text-zinc-900">Toutes les dépenses</h2>
-                <p className="text-sm text-zinc-500">
+                <h2 className="text-lg font-semibold text-blue-900">Toutes les dépenses</h2>
+                <p className="text-sm text-blue-600/80">
                   {expenses.length} dépense{expenses.length > 1 ? 's' : ''} reçue{expenses.length > 1 ? 's' : ''}
                   {lastRefresh && (
                     <span className="ml-2 text-xs">
@@ -233,50 +244,50 @@ export default function ExpensesPage() {
             </div>
           </div>
 
-          <div className="divide-y divide-zinc-200">
+          <div className="divide-y divide-blue-200/30">
             {expenses.length === 0 ? (
               <div className="p-16 text-center">
-                <div className="w-24 h-24 bg-zinc-100 rounded-lg flex items-center justify-center mx-auto mb-6">
-                  <DevicePhoneMobileIcon className="w-12 h-12 text-zinc-400" />
+                <div className="w-24 h-24 bg-blue-100/50 backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto mb-6 border border-blue-200/50">
+                  <DevicePhoneMobileIcon className="w-12 h-12 text-blue-400" />
                 </div>
-                <p className="text-zinc-900 font-semibold text-lg mb-2">Aucune dépense reçue</p>
-                <p className="text-sm text-zinc-500">Les dépenses apparaîtront ici automatiquement</p>
+                <p className="text-blue-900 font-semibold text-lg mb-2">Aucune dépense reçue</p>
+                <p className="text-sm text-blue-600/70">Les dépenses apparaîtront ici automatiquement</p>
               </div>
             ) : (
               expenses.map((expense, index) => (
                 <div 
                   key={expense.id} 
-                  className="p-6 hover:bg-zinc-50 transition-colors"
+                  className="p-6 hover:bg-blue-50/30 backdrop-blur-sm transition-all"
                 >
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-3 flex-wrap">
-                        <span className="text-3xl font-semibold text-zinc-900">
+                        <span className="text-3xl font-semibold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">
                           {expense.amount}€
                         </span>
-                        <span className="px-3 py-1 bg-zinc-100 text-zinc-700 text-xs font-medium rounded-full">
+                        <span className="px-3 py-1 bg-blue-100/60 backdrop-blur-sm text-blue-700 text-xs font-medium rounded-full border border-blue-200/50">
                           {expense.category}
                         </span>
-                        <span className="px-3 py-1 bg-zinc-100 text-zinc-700 text-xs font-medium rounded-full">
+                        <span className="px-3 py-1 bg-blue-100/60 backdrop-blur-sm text-blue-700 text-xs font-medium rounded-full border border-blue-200/50">
                           {expense.source}
                         </span>
-                        <span className="px-3 py-1 bg-zinc-100 text-zinc-700 text-xs font-medium rounded-full">
+                        <span className="px-3 py-1 bg-blue-100/60 backdrop-blur-sm text-blue-700 text-xs font-medium rounded-full border border-blue-200/50">
                           {Math.round(expense.confidence * 100)}% confiance
                         </span>
                       </div>
-                      <p className="text-zinc-900 font-semibold text-lg mb-1 break-words">{expense.merchant}</p>
-                      <p className="text-sm text-zinc-600 break-words">{expense.description}</p>
+                      <p className="text-blue-900 font-semibold text-lg mb-1 break-words">{expense.merchant}</p>
+                      <p className="text-sm text-blue-700/80 break-words">{expense.description}</p>
                     </div>
                   </div>
 
                   {expense.original_message && (
-                    <div className="bg-zinc-50 p-4 rounded-lg border border-zinc-200 mt-4">
-                      <p className="text-sm text-zinc-700 mb-2 break-words">
-                        <strong className="text-zinc-900 font-semibold">Message original:</strong> &quot;{expense.original_message}&quot;
+                    <div className="bg-blue-50/40 backdrop-blur-sm p-4 rounded-lg border border-blue-200/50 mt-4">
+                      <p className="text-sm text-blue-800 mb-2 break-words">
+                        <strong className="text-blue-900 font-semibold">Message original:</strong> &quot;{expense.original_message}&quot;
                       </p>
-                      <p className="text-xs text-zinc-500 flex items-center gap-2 flex-wrap">
+                      <p className="text-xs text-blue-600/70 flex items-center gap-2 flex-wrap">
                         <span>De:</span>
-                        <span className="font-medium text-zinc-700">{expense.whatsapp_from}</span>
+                        <span className="font-medium text-blue-700">{expense.whatsapp_from}</span>
                         <span className="mx-1">•</span>
                         <span>{new Date(expense.received_at).toLocaleString('fr-FR')}</span>
                       </p>

@@ -8,19 +8,20 @@
 @layer utilities {
   :root {
     --foreground-rgb: 17, 17, 17; /* zinc-900 */
-    --background-rgb: 250, 250, 250; /* zinc-50 */
+    --background-rgb: 239, 246, 255; /* smart-blue-50 */
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
       --foreground-rgb: 250, 250, 250; /* zinc-50 */
-      --background-rgb: 9, 9, 11; /* zinc-950 */
+      --background-rgb: 23, 37, 84; /* smart-blue-950 */
     }
   }
 
   body {
     color: rgb(var(--foreground-rgb));
-    background-color: rgb(var(--background-rgb));
+    background: linear-gradient(135deg, rgb(239, 246, 255) 0%, rgb(219, 234, 254) 50%, rgb(191, 219, 254) 100%);
+    min-height: 100vh;
   }
 }
 
