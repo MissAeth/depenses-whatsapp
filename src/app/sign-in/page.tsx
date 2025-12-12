@@ -15,7 +15,7 @@ export default function SignInPage() {
   // Rediriger si déjà connecté
   useEffect(() => {
     if (isAuthenticated()) {
-      router.push('/')
+      router.push('/depenses')
     }
   }, [router])
 
@@ -40,8 +40,8 @@ export default function SignInPage() {
         localStorage.setItem('auth_token', data.token)
         localStorage.setItem('auth_user', username)
         
-        // Rediriger vers la page d'accueil
-        router.push('/')
+        // Rediriger vers la page des dépenses
+        router.push('/depenses')
         router.refresh()
       } else {
         setError(data.error || 'Identifiants incorrects')

@@ -52,8 +52,8 @@ export default function NavigationMenu() {
   }, [])
 
   const isActive = (path: string) => {
-    if (path === '/') {
-      return pathname === '/'
+    if (path === '/depenses') {
+      return pathname === '/depenses'
     }
     return pathname.startsWith(path)
   }
@@ -61,14 +61,14 @@ export default function NavigationMenu() {
   const handleLogout = () => {
     logoutUser()
     setAuthenticated(false)
-    router.push('/sign-in')
+    router.push('/')
     router.refresh()
   }
 
   // Construire les items de navigation selon l'état d'authentification
   const baseNavItems: NavItem[] = [
     {
-      path: '/',
+      path: '/depenses',
       label: 'Dépenses',
       icon: HomeIcon,
       iconSolid: HomeIconSolid
@@ -89,14 +89,14 @@ export default function NavigationMenu() {
 
   const authNavItem: NavItem = authenticated
     ? {
-        path: '/sign-in',
+        path: '/',
         label: 'Déconnexion',
         icon: ArrowRightOnRectangleIcon,
         iconSolid: UserCircleIconSolid,
         action: handleLogout
       }
     : {
-        path: '/sign-in',
+        path: '/',
         label: 'Connexion',
         icon: UserCircleIcon,
         iconSolid: UserCircleIconSolid
