@@ -44,8 +44,7 @@ export default function WhatsappExpensesPanel() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [start, setStart] = useState('')
-  const [end, setEnd] = useState('')
+  const [date, setDate] = useState('')
   const [sort, setSort] = useState<'created_at' | 'amount' | 'received_at'>('created_at')
   const [order, setOrder] = useState<'asc' | 'desc'>('desc')
   const [page, setPage] = useState(1)
@@ -58,8 +57,10 @@ export default function WhatsappExpensesPanel() {
       if (search) url.searchParams.set('q', search)
       if (category) url.searchParams.set('category', category)
       if (statusFilter) url.searchParams.set('status', statusFilter)
-      if (start) url.searchParams.set('start', start)
-      if (end) url.searchParams.set('end', end)
+      if (date) {
+        url.searchParams.set('start', date)
+        url.searchParams.set('end', date)
+      }
       if (sort) url.searchParams.set('sort', sort)
       if (order) url.searchParams.set('order', order)
       const currentPage = opts?.resetPage ? 1 : page
@@ -159,7 +160,7 @@ export default function WhatsappExpensesPanel() {
     }
     loadExpenses()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, category, statusFilter, start, end, sort, order, page, pageSize])
+  }, [search, category, statusFilter, date, sort, order, page, pageSize])
 
   const handleSaveExpense = async (updated: Expense) => {
     try {
@@ -243,8 +244,7 @@ export default function WhatsappExpensesPanel() {
               onChange={(e) => setSearch(e.target.value)}
               className="w-full lg:col-span-2 p-2 border border-zinc-300 rounded"
             />
-            <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="w-full p-2 border border-zinc-300 rounded" />
-            <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="w-full p-2 border border-zinc-300 rounded" />
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} placeholder="Date" className="w-full p-2 border border-zinc-300 rounded" />
             <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full p-2 border border-zinc-300 rounded">
               <option value="">Toutes catégories</option>
               <option value="Restauration">Restauration</option>
@@ -270,7 +270,7 @@ export default function WhatsappExpensesPanel() {
             </div>
             <div className="flex flex-wrap gap-2 lg:col-span-6">
               <button onClick={() => loadExpenses({ resetPage: true })} className="px-3 py-2 bg-zinc-900 text-white rounded hover:bg-zinc-800">Appliquer</button>
-              <button onClick={() => { setSearch(''); setCategory(''); setStart(''); setEnd(''); setSort('created_at'); setOrder('desc'); setPage(1); setPageSize(20); loadExpenses({ resetPage: true })}} className="px-3 py-2 border border-zinc-300 rounded hover:bg-zinc-50">Réinitialiser</button>
+              <button onClick={() => { setSearch(''); setCategory(''); setDate(''); setSort('created_at'); setOrder('desc'); setPage(1); setPageSize(20); loadExpenses({ resetPage: true })}} className="px-3 py-2 border border-zinc-300 rounded hover:bg-zinc-50">Réinitialiser</button>
             </div>
           </div>
 
@@ -290,8 +290,10 @@ export default function WhatsappExpensesPanel() {
                   const u = new URL('/api/whatsapp-expenses/export', window.location.origin)
                   if (search) u.searchParams.set('q', search)
                   if (category) u.searchParams.set('category', category)
-                  if (start) u.searchParams.set('start', start)
-                  if (end) u.searchParams.set('end', end)
+                  if (date) {
+                    u.searchParams.set('start', date)
+                    u.searchParams.set('end', date)
+                  }
                   if (sort) u.searchParams.set('sort', sort)
                   if (order) u.searchParams.set('order', order)
                   u.searchParams.set('format','csv')
