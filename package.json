@@ -39,7 +39,7 @@
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
     "baseline-browser-mapping": "^2.9.4",
-    "eslint": "^9.36.0",
+    "eslint": "^9.39.1",
     "eslint-config-next": "16.0.7",
     "postcss": "^8",
     "tailwindcss": "^4.1.13",
