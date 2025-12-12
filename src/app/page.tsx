@@ -130,11 +130,11 @@ export default function Home() {
           <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent pointer-events-none"></div>
           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/10 pointer-events-none rounded-3xl"></div>
           
-          <div className="relative z-10 p-8 border-b border-white/20 backdrop-blur-sm">
-            <div className="flex justify-between items-center">
-            <div>
-              <div className="flex items-center gap-4 mb-3">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden bg-white/80 shadow-xl ring-2 ring-blue-200/50 p-1.5 hover:scale-110 transition-transform duration-300">
+          <div className="relative z-10 p-4 sm:p-6 md:p-8 border-b border-white/20 backdrop-blur-sm">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 sm:gap-4 mb-2 sm:mb-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center overflow-hidden bg-white/80 shadow-xl ring-2 ring-blue-200/50 p-1.5 hover:scale-110 transition-transform duration-300 flex-shrink-0">
                   <img 
                     src="/smart-expense-logo.png?v=2" 
                     alt="SmartExpense Logo" 
@@ -147,17 +147,17 @@ export default function Home() {
                     }}
                   />
                 </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-white tracking-tight drop-shadow-sm">SmartExpense</h1>
-                  <p className="text-blue-50/95 mt-1 text-sm font-medium">Gestion intelligente avec IA Gemini</p>
+                <div className="min-w-0">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight drop-shadow-sm truncate">SmartExpense</h1>
+                  <p className="text-blue-50/95 mt-1 text-xs sm:text-sm font-medium">Gestion intelligente avec IA Gemini</p>
                 </div>
               </div>
             </div>
-            <div className="inline-flex rounded-2xl border border-white/30 bg-white/20 backdrop-blur-md overflow-hidden shadow-lg p-1">
+            <div className="w-full sm:w-auto inline-flex rounded-xl sm:rounded-2xl border border-white/30 bg-white/20 backdrop-blur-md overflow-hidden shadow-lg p-0.5 sm:p-1">
               <button 
                 id="tab-expenses" 
                 onClick={() => setActiveTab('expenses')} 
-                className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
+                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl transition-all duration-300 whitespace-nowrap ${
                   activeTab === 'expenses' 
                     ? 'bg-gradient-to-r from-blue-700 to-blue-800 text-white shadow-xl scale-105' 
                     : 'text-white/90 hover:bg-white/20 hover:text-white'
@@ -167,7 +167,7 @@ export default function Home() {
               </button>
               <button 
                 onClick={() => setActiveTab('analytics')} 
-                className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
+                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl transition-all duration-300 whitespace-nowrap ${
                   activeTab === 'analytics' 
                     ? 'bg-gradient-to-r from-blue-700 to-blue-800 text-white shadow-xl scale-105' 
                     : 'text-white/90 hover:bg-white/20 hover:text-white'
