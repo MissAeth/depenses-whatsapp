@@ -48,14 +48,6 @@ export default function LoginPage() {
     }
   }
 
-  const logout = async () => {
-    setLoading(true)
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' })
-      window.location.reload()
-    } catch {}
-    setLoading(false)
-  }
 
   return (
     <div className='min-h-screen flex items-center justify-center bg-white p-4 relative overflow-hidden'>
@@ -124,14 +116,6 @@ export default function LoginPage() {
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
           </form>
-
-          <hr className='my-6 border-blue-200/40' />
-          <button 
-            onClick={logout} 
-            className='w-full text-sm text-blue-50/90 hover:text-white font-medium transition-colors'
-          >
-            Se déconnecter
-          </button>
         </div>
       </div>
     </div>
