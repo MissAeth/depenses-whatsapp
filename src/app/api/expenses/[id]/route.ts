@@ -25,13 +25,37 @@ export async function PUT(
         .from('users')
         .select('role')
         .or(`phone.eq.${userPhone},phone.eq.+${userPhone}`)
-        .single()
-        .catch(() => ({ data: null }))
+        .maybeSingle()
       
       isAdmin = user?.role === 'admin'
     }
 
-    // Construire la requête de mise à jour
+    // D'abord vérifier que la dépense existe et que l'utilisateur a les droits
+    let checkQuery = supabase
+      .from('whatsapp_expenses')
+      .select('id')
+      .eq('id', id)
+
+    // Si pas admin, vérifier aussi le téléphone
+    if (!isAdmin && userPhone) {
+      checkQuery = checkQuery.eq('whatsapp_from', userPhone)
+    }
+
+    const { data: existingExpense, error: checkError } = await checkQuery.maybeSingle()
+
+    if (checkError) {
+      console.error('Erreur vérification dépense:', checkError)
+      return NextResponse.json({ success: false, error: 'Erreur lors de la vérification' }, { status: 500 })
+    }
+
+    if (!existingExpense) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Dépense introuvable ou vous n\'avez pas les droits pour la modifier' 
+      }, { status: 404 })
+    }
+
+    // Maintenant faire la mise à jour
     let updateQuery = supabase
       .from('whatsapp_expenses')
       .update({
@@ -49,30 +73,22 @@ export async function PUT(
       updateQuery = updateQuery.eq('whatsapp_from', userPhone)
     }
 
-    const { data, error } = await updateQuery
+    const { data: updatedData, error: updateError } = await updateQuery
       .select('*')
-      .single()
 
-    if (error) {
-      console.error('Erreur update Supabase:', error)
-      // Si l'erreur est "PGRST116" (aucun résultat), c'est que la dépense n'existe pas ou n'appartient pas à l'utilisateur
-      if (error.code === 'PGRST116' || error.message?.includes('No rows')) {
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Dépense introuvable ou vous n\'avez pas les droits pour la modifier' 
-        }, { status: 404 })
-      }
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    if (updateError) {
+      console.error('Erreur update Supabase:', updateError)
+      return NextResponse.json({ success: false, error: updateError.message }, { status: 500 })
     }
 
-    if (!data) {
+    if (!updatedData || updatedData.length === 0) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Dépense introuvable ou vous n\'avez pas les droits pour la modifier' 
+        error: 'Aucune dépense mise à jour' 
       }, { status: 404 })
     }
 
-    return NextResponse.json({ success: true, expense: data })
+    return NextResponse.json({ success: true, expense: updatedData[0] })
   } catch (e) {
     console.error('Erreur PUT expense:', e)
     return NextResponse.json({ success: false, error: 'Erreur serveur' }, { status: 500 })
@@ -100,13 +116,37 @@ export async function DELETE(
         .from('users')
         .select('role')
         .or(`phone.eq.${userPhone},phone.eq.+${userPhone}`)
-        .single()
-        .catch(() => ({ data: null }))
+        .maybeSingle()
       
       isAdmin = user?.role === 'admin'
     }
 
-    // Construire la requête de suppression
+    // D'abord vérifier que la dépense existe et que l'utilisateur a les droits
+    let checkQuery = supabase
+      .from('whatsapp_expenses')
+      .select('id')
+      .eq('id', id)
+
+    // Si pas admin, vérifier aussi le téléphone
+    if (!isAdmin && userPhone) {
+      checkQuery = checkQuery.eq('whatsapp_from', userPhone)
+    }
+
+    const { data: existingExpense, error: checkError } = await checkQuery.maybeSingle()
+
+    if (checkError) {
+      console.error('Erreur vérification dépense:', checkError)
+      return NextResponse.json({ success: false, error: 'Erreur lors de la vérification' }, { status: 500 })
+    }
+
+    if (!existingExpense) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Dépense introuvable ou vous n\'avez pas les droits pour la supprimer' 
+      }, { status: 404 })
+    }
+
+    // Maintenant faire la suppression
     let deleteQuery = supabase
       .from('whatsapp_expenses')
       .delete()
@@ -117,19 +157,11 @@ export async function DELETE(
       deleteQuery = deleteQuery.eq('whatsapp_from', userPhone)
     }
 
-    const { error, count } = await deleteQuery
+    const { error: deleteError } = await deleteQuery
 
-    if (error) {
-      console.error('Erreur delete Supabase:', error)
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 })
-    }
-
-    // Vérifier si une ligne a été supprimée
-    if (count === 0) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Dépense introuvable ou vous n\'avez pas les droits pour la supprimer' 
-      }, { status: 404 })
+    if (deleteError) {
+      console.error('Erreur delete Supabase:', deleteError)
+      return NextResponse.json({ success: false, error: deleteError.message }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })

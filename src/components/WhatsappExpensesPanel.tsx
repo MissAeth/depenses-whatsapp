@@ -168,6 +168,14 @@ export default function WhatsappExpensesPanel() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updated)
       })
+      
+      // Vérifier le statut de la réponse avant de parser le JSON
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: 'Erreur inconnue' }))
+        alert('Erreur: ' + (errorData.error || 'Erreur inconnue'))
+        return
+      }
+      
       const data = await res.json()
       console.log('API response:', data)
       if (data.success && data.expense) {
@@ -184,8 +192,8 @@ export default function WhatsappExpensesPanel() {
         alert('Erreur: ' + (data.error || 'Erreur inconnue'))
       }
     } catch (e) {
-      alert('Erreur réseau')
-      console.error(e)
+      console.error('Erreur réseau:', e)
+      alert('Erreur réseau: ' + (e instanceof Error ? e.message : 'Erreur inconnue'))
     }
   }
 
