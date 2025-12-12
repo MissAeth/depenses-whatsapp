@@ -105,7 +105,7 @@ export default function NavigationMenu() {
   const navItems = [...baseNavItems, authNavItem]
 
   return (
-    <nav className="fixed right-6 top-1/2 -translate-y-1/2 z-50">
+    <nav className="fixed left-6 top-1/2 -translate-y-1/2 z-50">
       <div className="backdrop-blur-xl bg-gradient-to-br from-slate-800/90 via-slate-800/80 to-slate-900/90 rounded-2xl shadow-2xl border border-slate-700/50 p-3 space-y-2 ring-1 ring-white/10">
         {navItems.map((item) => {
           const active = isActive(item.path)
@@ -136,10 +136,10 @@ export default function NavigationMenu() {
               </button>
               
               {/* Tooltip */}
-              <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                 <div className="backdrop-blur-xl bg-slate-800/90 text-white text-sm font-bold px-4 py-2 rounded-lg shadow-xl border border-slate-700/50 whitespace-nowrap">
                   {item.label}
-                  <div className="absolute left-full top-1/2 -translate-y-1/2 border-4 border-transparent border-l-slate-800/90"></div>
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800/90"></div>
                 </div>
               </div>
             </div>
