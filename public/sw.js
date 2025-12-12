@@ -4,8 +4,7 @@ const APP_SHELL = [
   '/',
   '/manifest.json',
   '/offline.html',
-  '/SGDF_symbole_RVB.png',
-  '/SGDF_symbole_blanc.png',
+  '/smart-expense-logo.png',
   '/favicon.ico'
 ];
 

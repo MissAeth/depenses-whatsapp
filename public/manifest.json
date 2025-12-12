@@ -16,12 +16,12 @@
 	"prefer_related_applications": false,
 	"icons": [
 		{
-			"src": "/SGDF_symbole_RVB.png",
+			"src": "/smart-expense-logo.png",
 			"sizes": "512x512",
 			"type": "image/png"
 		},
 		{
-			"src": "/SGDF_symbole_blanc.png",
+			"src": "/smart-expense-logo.png",
 			"sizes": "512x512",
 			"type": "image/png",
 			"purpose": "maskable any"

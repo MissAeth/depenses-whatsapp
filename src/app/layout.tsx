@@ -35,7 +35,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="SmartExpense" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/SGDF_symbole_RVB.png" />
+        <link rel="apple-touch-icon" href="/smart-expense-logo.png" />
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-sans">
