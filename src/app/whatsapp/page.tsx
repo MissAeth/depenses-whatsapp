@@ -246,89 +246,67 @@ export default function WhatsAppPage() {
   // Afficher un loader pendant la vérification de l'authentification
   if (checkingAuth) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50/40 flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 font-medium">Vérification de l'authentification...</p>
+          <div className="w-16 h-16 border-4 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-zinc-600 font-medium">Vérification de l'authentification...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50/40 relative overflow-hidden">
-      {/* Effets de fond animés */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-yellow-200/30 rounded-full blur-3xl animate-pulse delay-2000"></div>
-      </div>
+    <main className="min-h-screen bg-zinc-50 p-4">
+      <div className="max-w-5xl mx-auto">
 
       {/* Système de notifications Toast */}
       <div className="fixed top-20 right-4 md:right-24 left-4 md:left-auto z-50 space-y-3 max-w-sm md:max-w-md">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`backdrop-blur-xl rounded-2xl shadow-2xl border-2 p-4 min-w-[300px] max-w-md animate-slide-in-right ${
+            className={`bg-white rounded-lg border shadow-sm p-4 min-w-[300px] max-w-md ${
               toast.type === 'success'
-                ? 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300 text-emerald-900'
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
                 : toast.type === 'error'
-                ? 'bg-gradient-to-r from-red-50 to-rose-50 border-red-300 text-red-900'
-                : 'bg-white border-slate-200 text-slate-700'
+                ? 'border-rose-200 bg-rose-50 text-rose-900'
+                : 'border-zinc-200 text-zinc-700'
             }`}
           >
             <div className="flex items-center gap-3">
               {toast.type === 'success' ? (
                 <CheckCircleIcon className="w-6 h-6 text-emerald-600 flex-shrink-0" />
               ) : toast.type === 'error' ? (
-                <XCircleIcon className="w-6 h-6 text-red-600 flex-shrink-0" />
+                <XCircleIcon className="w-6 h-6 text-rose-600 flex-shrink-0" />
               ) : (
-                <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                <div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                  <div className="w-2 h-2 rounded-full bg-zinc-600"></div>
                 </div>
               )}
-              <p className="font-bold text-sm flex-1">{toast.message}</p>
+              <p className="font-medium text-sm flex-1">{toast.message}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Header moderne avec glassmorphism */}
-      <div className="sticky top-0 z-50 backdrop-blur-xl bg-slate-100/90 border-b border-slate-300/50 shadow-lg mb-4 md:mb-8">
-        <div className="max-w-5xl mx-auto px-4 md:px-6 py-3 md:py-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 md:gap-4">
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-1 md:p-1.5 ring-2 ring-blue-400/50 border border-blue-300/30">
-                <img 
-                  src="/smart-expense-logo.jpg?v=1" 
-                  alt="Smart Expense Logo" 
-                  className="w-full h-full object-contain"
-                  loading="eager"
-                  onError={(e) => {
-                    console.error('Erreur chargement logo:', e)
-                    const target = e.target as HTMLImageElement
-                    target.style.display = 'none'
-                    if (target.parentElement) {
-                      target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-700"><span class="text-white text-lg md:text-2xl font-black">SE</span></div>'
-                    }
-                  }}
-                />
+      {/* Header */}
+      <div className="bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden mb-6">
+        <div className="bg-white p-6 border-b border-zinc-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-zinc-900 rounded flex items-center justify-center">
+                  <span className="text-white text-sm">💰</span>
+                </div>
+                <h1 className="text-2xl font-semibold text-zinc-900">SmartExpense</h1>
               </div>
-              <div>
-                <h1 className="text-lg md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-600 to-blue-800 tracking-tight">
-                  <span className="hidden md:inline">Smart Expense </span>WhatsApp
-                </h1>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">
-                  Réception automatique • IA Gemini
-                  {isRefreshing && <span className="ml-2 animate-pulse">🔄</span>}
-                </p>
-              </div>
+              <p className="text-zinc-500 mt-2">
+                Réception automatique • IA Gemini
+                {isRefreshing && <span className="ml-2 animate-pulse">🔄</span>}
+              </p>
             </div>
           </div>
         </div>
       </div>
-
-      <div className="max-w-5xl mx-auto px-4 md:px-6 pb-8 md:pb-12 relative z-10">
         {/* Zone de test - Design moderne avec glassmorphism */}
         <div className="backdrop-blur-xl bg-gradient-to-br from-slate-800/80 via-slate-800/70 to-slate-900/80 rounded-2xl md:rounded-3xl shadow-xl border border-slate-700/50 p-4 md:p-8 mb-6 md:mb-8 hover:shadow-2xl transition-all duration-500 ring-1 ring-white/10">
           <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-8">
