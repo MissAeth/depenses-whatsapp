@@ -1,11 +1,13 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { 
   HomeIcon, 
   DevicePhoneMobileIcon, 
   WifiIcon,
-  UserCircleIcon
+  UserCircleIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline'
 import { 
   HomeIcon as HomeIconSolid, 
@@ -13,44 +15,41 @@ import {
   WifiIcon as WifiIconSolid,
   UserCircleIcon as UserCircleIconSolid
 } from '@heroicons/react/24/solid'
+import { isAuthenticated, logout as logoutUser } from '@/lib/auth'
 
 interface NavItem {
   path: string
   label: string
   icon: React.ComponentType<{ className?: string }>
   iconSolid: React.ComponentType<{ className?: string }>
+  action?: () => void
 }
-
-const navItems: NavItem[] = [
-  {
-    path: '/',
-    label: 'Dépenses',
-    icon: HomeIcon,
-    iconSolid: HomeIconSolid
-  },
-  {
-    path: '/whatsapp',
-    label: 'WhatsApp',
-    icon: DevicePhoneMobileIcon,
-    iconSolid: DevicePhoneMobileIconSolid
-  },
-  {
-    path: '/offline',
-    label: 'Hors ligne',
-    icon: WifiIcon,
-    iconSolid: WifiIconSolid
-  },
-  {
-    path: '/sign-in',
-    label: 'Connexion',
-    icon: UserCircleIcon,
-    iconSolid: UserCircleIconSolid
-  }
-]
 
 export default function NavigationMenu() {
   const pathname = usePathname()
   const router = useRouter()
+  const [authenticated, setAuthenticated] = useState(false)
+
+  useEffect(() => {
+    // Vérifier l'état d'authentification au montage et lors des changements
+    setAuthenticated(isAuthenticated())
+    
+    // Écouter les changements de localStorage
+    const handleStorageChange = () => {
+      setAuthenticated(isAuthenticated())
+    }
+    
+    window.addEventListener('storage', handleStorageChange)
+    // Vérifier périodiquement (pour les changements dans le même onglet)
+    const interval = setInterval(() => {
+      setAuthenticated(isAuthenticated())
+    }, 1000)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      clearInterval(interval)
+    }
+  }, [])
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -58,6 +57,52 @@ export default function NavigationMenu() {
     }
     return pathname.startsWith(path)
   }
+
+  const handleLogout = () => {
+    logoutUser()
+    setAuthenticated(false)
+    router.push('/sign-in')
+    router.refresh()
+  }
+
+  // Construire les items de navigation selon l'état d'authentification
+  const baseNavItems: NavItem[] = [
+    {
+      path: '/',
+      label: 'Dépenses',
+      icon: HomeIcon,
+      iconSolid: HomeIconSolid
+    },
+    {
+      path: '/whatsapp',
+      label: 'WhatsApp',
+      icon: DevicePhoneMobileIcon,
+      iconSolid: DevicePhoneMobileIconSolid
+    },
+    {
+      path: '/offline',
+      label: 'Hors ligne',
+      icon: WifiIcon,
+      iconSolid: WifiIconSolid
+    }
+  ]
+
+  const authNavItem: NavItem = authenticated
+    ? {
+        path: '/sign-in',
+        label: 'Déconnexion',
+        icon: ArrowRightOnRectangleIcon,
+        iconSolid: UserCircleIconSolid,
+        action: handleLogout
+      }
+    : {
+        path: '/sign-in',
+        label: 'Connexion',
+        icon: UserCircleIcon,
+        iconSolid: UserCircleIconSolid
+      }
+
+  const navItems = [...baseNavItems, authNavItem]
 
   return (
     <nav className="fixed right-6 top-1/2 -translate-y-1/2 z-50">
@@ -69,7 +114,13 @@ export default function NavigationMenu() {
           return (
             <div key={item.path} className="relative group">
               <button
-                onClick={() => router.push(item.path)}
+                onClick={() => {
+                  if (item.action) {
+                    item.action()
+                  } else {
+                    router.push(item.path)
+                  }
+                }}
                 className={`
                   w-14 h-14 rounded-xl flex items-center justify-center
                   transition-all duration-300
