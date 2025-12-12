@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { DevicePhoneMobileIcon, EyeIcon, ArrowPathIcon, XMarkIcon, PencilIcon } from "@heroicons/react/24/outline"
+import { DevicePhoneMobileIcon, EyeIcon, ArrowPathIcon, XMarkIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline"
 import dynamic from 'next/dynamic'
 
 const EditExpenseModal = dynamic(() => import('./EditExpenseModal'), { ssr: false })
@@ -323,8 +323,8 @@ export default function WhatsappExpensesPanel() {
                 key={expense.id} 
                 className="p-6 transition-colors"
               >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-3">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="text-lg font-semibold text-zinc-900">{expense.amount}€</span>
                       <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">{expense.category}</span>
@@ -336,16 +336,16 @@ export default function WhatsappExpensesPanel() {
                         </span>
                       )}
                     </div>
-                    <p className="text-zinc-700 font-medium">{expense.merchant}</p>
-                    <p className="text-sm text-zinc-500">{expense.description}</p>
+                    <p className="text-zinc-700 font-medium break-words">{expense.merchant}</p>
+                    <p className="text-sm text-zinc-500 break-words">{expense.description}</p>
                   </div>
-                  <div className="flex items-center gap-3 flex-shrink-0">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 w-full sm:w-auto">
                     {(expense.image_data || expense.image_url) && (
                       <div className="flex-shrink-0">
                         <img
                           src={expense.image_data || expense.image_url}
                           alt="Ticket de dépense"
-                          className="w-16 h-16 object-cover rounded-lg border border-zinc-200 cursor-pointer hover:opacity-80 transition"
+                          className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg border border-zinc-200 cursor-pointer hover:opacity-80 transition"
                           title="Cliquez pour agrandir l'image"
                           onClick={(e) => {
                             e.stopPropagation()
@@ -361,18 +361,32 @@ export default function WhatsappExpensesPanel() {
                         e.stopPropagation()
                         setEditingExpense(expense)
                       }}
-                      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg border-2 border-blue-600/50 ring-2 ring-blue-500/30 relative overflow-hidden group"
+                      className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-105 shadow-lg border-2 border-blue-600/50 ring-2 ring-blue-500/30 relative overflow-hidden group flex-shrink-0"
                       title="Éditer cette dépense"
                     >
                       {/* Effet de brillance sur le bouton */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                      <PencilIcon className="w-4 h-4 relative z-10" />
-                      <span className="relative z-10">Éditer</span>
+                      <PencilIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" />
+                      <span className="relative z-10 hidden sm:inline">Éditer</span>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (confirm('Êtes-vous sûr de vouloir supprimer cette dépense ?')) {
+                          handleDeleteExpense(expense.id)
+                        }
+                      }}
+                      className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-105 shadow-lg border-2 border-red-500/50 ring-2 ring-red-400/30 relative overflow-hidden group flex-shrink-0"
+                      title="Supprimer cette dépense"
+                    >
+                      {/* Effet de brillance sur le bouton */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                      <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" />
                     </button>
                   </div>
-                  <div className="text-right text-sm text-zinc-500 flex-shrink-0 ml-4">
-                    <p>Confiance: {Math.round((expense.confidence || 0) * 100)}%</p>
-                    <p>
+                  <div className="text-left sm:text-right text-xs sm:text-sm text-zinc-500 flex-shrink-0 w-full sm:w-auto sm:ml-4">
+                    <p className="break-words">Confiance: {Math.round((expense.confidence || 0) * 100)}%</p>
+                    <p className="break-words">
                       Reçu: {expense.received_at
                         ? new Date(expense.received_at).toLocaleDateString('fr-FR')
                         : 'Date inconnue'}
