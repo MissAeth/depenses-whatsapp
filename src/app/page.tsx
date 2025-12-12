@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { EyeIcon, ArrowPathIcon, DevicePhoneMobileIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { isAuthenticated } from '@/lib/auth'
 
 interface Expense {
   id: string
@@ -24,15 +26,28 @@ interface Toast {
 }
 
 export default function HomePage() {
+  const router = useRouter()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(false)
   const [toasts, setToasts] = useState<Toast[]>([])
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [checkingAuth, setCheckingAuth] = useState(true)
   const expensesRef = useRef<HTMLDivElement>(null)
+
+  // Vérifier l'authentification au démarrage
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push('/sign-in')
+      return
+    }
+    setCheckingAuth(false)
+  }, [router])
 
   // Auto-refresh toutes les 30 secondes
   useEffect(() => {
+    if (checkingAuth) return
+    
     const interval = setInterval(() => {
       if (!loading) {
         loadExpenses(true) // Silent refresh
@@ -40,12 +55,14 @@ export default function HomePage() {
     }, 30000)
 
     return () => clearInterval(interval)
-  }, [loading])
+  }, [loading, checkingAuth])
 
-  // Charger les dépenses au démarrage
+  // Charger les dépenses au démarrage (seulement si authentifié)
   useEffect(() => {
-    loadExpenses()
-  }, [])
+    if (!checkingAuth && isAuthenticated()) {
+      loadExpenses()
+    }
+  }, [checkingAuth])
 
   // Scroll vers le haut quand une nouvelle dépense arrive
   useEffect(() => {
@@ -113,6 +130,18 @@ export default function HomePage() {
     const hours = Math.floor(minutes / 60)
     if (hours < 24) return `il y a ${hours}h`
     return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  }
+
+  // Afficher un loader pendant la vérification de l'authentification
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50/40 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 font-medium">Vérification de l'authentification...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
