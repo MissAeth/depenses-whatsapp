@@ -189,7 +189,7 @@ export default function HomePage() {
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-1.5 ring-2 ring-amber-300/50 border border-amber-200/30">
                 <img 
-                  src="/smart-expense-logo.png" 
+                  src="/smart-expense-logo.jpg" 
                   alt="Smart Expense Logo" 
                   className="w-full h-full object-contain"
                   loading="eager"

@@ -35,8 +35,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Smart Expense" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <link rel="icon" href="/smart-expense-logo.png" />
-        <link rel="apple-touch-icon" href="/smart-expense-logo.png" />
+        <link rel="icon" href="/smart-expense-logo.jpg" />
+        <link rel="apple-touch-icon" href="/smart-expense-logo.jpg" />
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-sans">

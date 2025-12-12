@@ -2,7 +2,7 @@
 
 ## 📋 Action requise
 
-Vous devez ajouter le logo Smart Expense dans le dossier `public/` avec le nom exact : **`smart-expense-logo.png`**
+Vous devez ajouter le logo Smart Expense dans le dossier `public/` avec le nom exact : **`smart-expense-logo.jpg`**
 
 ### Description du logo attendu :
 - Logo avec une carte bleue et un ticket doré superposés
@@ -13,8 +13,8 @@ Vous devez ajouter le logo Smart Expense dans le dossier `public/` avec le nom e
 ### Étapes :
 
 1. **Téléchargez ou copiez votre logo Smart Expense**
-2. **Renommez-le en** : `smart-expense-logo.png`
-3. **Placez-le dans le dossier** : `public/smart-expense-logo.png`
+2. **Renommez-le en** : `smart-expense-logo.jpg`
+3. **Placez-le dans le dossier** : `public/smart-expense-logo.jpg`
 4. **Redémarrez le serveur** si vous êtes en développement
 
 ### Vérification :

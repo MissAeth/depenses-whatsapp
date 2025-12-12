@@ -16,20 +16,20 @@
 	"prefer_related_applications": false,
 	"icons": [
 		{
-			"src": "/smart-expense-logo.png",
+			"src": "/smart-expense-logo.jpg",
 			"sizes": "512x512",
-			"type": "image/png"
+			"type": "image/jpeg"
 		},
 		{
-			"src": "/smart-expense-logo.png",
+			"src": "/smart-expense-logo.jpg",
 			"sizes": "512x512",
-			"type": "image/png",
+			"type": "image/jpeg",
 			"purpose": "maskable any"
 		},
 		{
-			"src": "/smart-expense-logo.png",
+			"src": "/smart-expense-logo.jpg",
 			"sizes": "192x192",
-			"type": "image/png"
+			"type": "image/jpeg"
 		}
 	],
 	"shortcuts": [
