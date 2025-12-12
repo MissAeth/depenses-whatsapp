@@ -105,8 +105,8 @@ export default function NavigationMenu() {
   const navItems = [...baseNavItems, authNavItem]
 
   return (
-    <nav className="fixed left-6 top-1/2 -translate-y-1/2 z-50">
-      <div className="backdrop-blur-xl bg-gradient-to-br from-slate-800/90 via-slate-800/80 to-slate-900/90 rounded-2xl shadow-2xl border border-slate-700/50 p-3 space-y-2 ring-1 ring-white/10">
+    <nav className="fixed left-2 md:left-6 top-1/2 -translate-y-1/2 z-50">
+      <div className="backdrop-blur-xl bg-gradient-to-br from-slate-800/90 via-slate-800/80 to-slate-900/90 rounded-xl md:rounded-2xl shadow-2xl border border-slate-700/50 p-1.5 md:p-3 space-y-1.5 md:space-y-2 ring-1 ring-white/10">
         {navItems.map((item) => {
           const active = isActive(item.path)
           const Icon = active ? item.iconSolid : item.icon
@@ -122,7 +122,7 @@ export default function NavigationMenu() {
                   }
                 }}
                 className={`
-                  w-14 h-14 rounded-xl flex items-center justify-center
+                  w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl flex items-center justify-center
                   transition-all duration-300
                   ${
                     active
@@ -132,11 +132,11 @@ export default function NavigationMenu() {
                 `}
                 aria-label={item.label}
               >
-                <Icon className="w-6 h-6" />
+                <Icon className="w-5 h-5 md:w-6 md:h-6" />
               </button>
               
-              {/* Tooltip */}
-              <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              {/* Tooltip - Masqué sur mobile, visible sur desktop */}
+              <div className="hidden md:block absolute left-full ml-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                 <div className="backdrop-blur-xl bg-slate-800/90 text-white text-sm font-bold px-4 py-2 rounded-lg shadow-xl border border-slate-700/50 whitespace-nowrap">
                   {item.label}
                   <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800/90"></div>

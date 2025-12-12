@@ -265,7 +265,7 @@ export default function WhatsAppPage() {
       </div>
 
       {/* Système de notifications Toast */}
-      <div className="fixed top-20 right-24 z-50 space-y-3">
+      <div className="fixed top-20 right-4 md:right-24 left-4 md:left-auto z-50 space-y-3 max-w-sm md:max-w-md">
         {toasts.map((toast) => (
           <div
             key={toast.id}
@@ -294,11 +294,11 @@ export default function WhatsAppPage() {
       </div>
 
       {/* Header moderne avec glassmorphism */}
-      <div className="sticky top-0 z-50 backdrop-blur-xl bg-slate-100/90 border-b border-slate-300/50 shadow-lg mb-8">
-        <div className="max-w-5xl mx-auto px-6 py-5">
+      <div className="sticky top-0 z-50 backdrop-blur-xl bg-slate-100/90 border-b border-slate-300/50 shadow-lg mb-4 md:mb-8">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 py-3 md:py-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-1.5 ring-2 ring-blue-400/50 border border-blue-300/30">
+            <div className="flex items-center gap-2 md:gap-4">
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-1 md:p-1.5 ring-2 ring-blue-400/50 border border-blue-300/30">
                 <img 
                   src="/smart-expense-logo.jpg?v=1" 
                   alt="Smart Expense Logo" 
@@ -309,14 +309,14 @@ export default function WhatsAppPage() {
                     const target = e.target as HTMLImageElement
                     target.style.display = 'none'
                     if (target.parentElement) {
-                      target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-700"><span class="text-white text-2xl font-black">SE</span></div>'
+                      target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-700"><span class="text-white text-lg md:text-2xl font-black">SE</span></div>'
                     }
                   }}
                 />
               </div>
               <div>
-                <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-600 to-blue-800 tracking-tight">
-                  Smart Expense WhatsApp
+                <h1 className="text-lg md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-600 to-blue-800 tracking-tight">
+                  <span className="hidden md:inline">Smart Expense </span>WhatsApp
                 </h1>
                 <p className="text-xs text-slate-500 font-medium mt-0.5">
                   Réception automatique • IA Gemini
@@ -328,47 +328,47 @@ export default function WhatsAppPage() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 pb-12 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 md:px-6 pb-8 md:pb-12 relative z-10">
         {/* Zone de test - Design moderne avec glassmorphism */}
-        <div className="backdrop-blur-xl bg-gradient-to-br from-slate-800/80 via-slate-800/70 to-slate-900/80 rounded-3xl shadow-xl border border-slate-700/50 p-8 mb-8 hover:shadow-2xl transition-all duration-500 ring-1 ring-white/10">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-14 h-14 rounded-2xl backdrop-blur-sm bg-gradient-to-br from-blue-600/80 to-blue-700/80 flex items-center justify-center shadow-lg ring-2 ring-blue-400/50 border border-blue-500/30">
-              <PaperAirplaneIcon className="w-7 h-7 text-white" />
+        <div className="backdrop-blur-xl bg-gradient-to-br from-slate-800/80 via-slate-800/70 to-slate-900/80 rounded-2xl md:rounded-3xl shadow-xl border border-slate-700/50 p-4 md:p-8 mb-6 md:mb-8 hover:shadow-2xl transition-all duration-500 ring-1 ring-white/10">
+          <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-8">
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl backdrop-blur-sm bg-gradient-to-br from-blue-600/80 to-blue-700/80 flex items-center justify-center shadow-lg ring-2 ring-blue-400/50 border border-blue-500/30">
+              <PaperAirplaneIcon className="w-5 h-5 md:w-7 md:h-7 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-white mb-1">Simulateur WhatsApp</h2>
-              <p className="text-sm text-slate-300 font-medium">Testez la réception automatique de dépenses</p>
+              <h2 className="text-lg md:text-2xl font-black text-white mb-1">Simulateur WhatsApp</h2>
+              <p className="text-xs md:text-sm text-slate-300 font-medium">Testez la réception automatique de dépenses</p>
             </div>
           </div>
 
           {/* Onglets modernes */}
-          <div className="flex gap-3 mb-8 p-1.5 backdrop-blur-sm bg-slate-700/40 rounded-2xl border border-slate-600/50">
+          <div className="flex gap-2 md:gap-3 mb-4 md:mb-8 p-1 md:p-1.5 backdrop-blur-sm bg-slate-700/40 rounded-xl md:rounded-2xl border border-slate-600/50">
             <button
               onClick={() => {
                 setActiveTab('text')
                 setTestResult('')
               }}
-              className={`flex-1 px-6 py-3.5 flex items-center justify-center gap-2.5 font-bold text-sm rounded-xl transition-all duration-300 ${
+              className={`flex-1 px-3 md:px-6 py-2.5 md:py-3.5 flex items-center justify-center gap-1.5 md:gap-2.5 font-bold text-xs md:text-sm rounded-lg md:rounded-xl transition-all duration-300 ${
                 activeTab === 'text'
                   ? 'backdrop-blur-sm bg-gradient-to-r from-blue-600/80 to-blue-700/80 text-white shadow-lg scale-105 border border-blue-400/30 ring-1 ring-blue-300/20'
                   : 'text-slate-300 hover:text-white hover:bg-slate-700'
               }`}
             >
-              <DocumentTextIcon className="w-5 h-5" />
-              Message texte
+              <DocumentTextIcon className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="hidden sm:inline">Message </span>texte
             </button>
             <button
               onClick={() => {
                 setActiveTab('image')
                 setTestResult('')
               }}
-              className={`flex-1 px-6 py-3.5 flex items-center justify-center gap-2.5 font-bold text-sm rounded-xl transition-all duration-300 ${
+              className={`flex-1 px-3 md:px-6 py-2.5 md:py-3.5 flex items-center justify-center gap-1.5 md:gap-2.5 font-bold text-xs md:text-sm rounded-lg md:rounded-xl transition-all duration-300 ${
                 activeTab === 'image'
                   ? 'backdrop-blur-sm bg-gradient-to-r from-blue-600/80 to-blue-700/80 text-white shadow-lg scale-105 border border-blue-400/30 ring-1 ring-blue-300/20'
                   : 'text-slate-300 hover:text-white hover:bg-slate-700'
               }`}
             >
-              <PhotoIcon className="w-5 h-5" />
+              <PhotoIcon className="w-4 h-4 md:w-5 md:h-5" />
               Image
             </button>
           </div>
@@ -385,21 +385,21 @@ export default function WhatsAppPage() {
                       </span>
                     )}
                   </label>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <input
                       id="test-message"
                       type="text"
                       value={testMessage}
                       onChange={(e) => setTestMessage(e.target.value)}
                       placeholder="Ex: Restaurant Le Bistrot 25.50€"
-                      className="flex-1 p-4 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-2xl focus:ring-4 focus:ring-amber-400/30 focus:border-amber-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium"
+                      className="flex-1 p-3 md:p-4 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-xl md:rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium text-sm md:text-base"
                       onKeyPress={(e) => e.key === 'Enter' && !sending && testMessage.trim() && simulateWhatsAppMessage()}
                       disabled={sending}
                     />
                     <button
                       onClick={simulateWhatsAppMessage}
                       disabled={sending || !testMessage.trim()}
-                      className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2.5 font-black text-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none"
+                      className="px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl md:rounded-2xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-black text-xs md:text-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none"
                     >
                       {sending ? (
                         <>

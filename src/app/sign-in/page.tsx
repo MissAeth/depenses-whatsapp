@@ -62,12 +62,12 @@ export default function SignInPage() {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
-      <div className="relative z-10 w-full max-w-md">
+      <div className="relative z-10 w-full max-w-md mx-4 md:mx-auto">
         {/* Card de connexion */}
-        <div className="backdrop-blur-xl bg-gradient-to-br from-slate-800/90 via-slate-800/80 to-slate-900/90 rounded-3xl shadow-2xl border border-slate-700/50 p-8 ring-1 ring-white/10">
+        <div className="backdrop-blur-xl bg-gradient-to-br from-slate-800/90 via-slate-800/80 to-slate-900/90 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-700/50 p-6 md:p-8 ring-1 ring-white/10">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-2 ring-2 ring-blue-400/50 border border-blue-300/30 mx-auto mb-4">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-1.5 md:p-2 ring-2 ring-blue-400/50 border border-blue-300/30 mx-auto mb-3 md:mb-4">
               <img 
                 src="/smart-expense-logo.jpg?v=1" 
                 alt="Smart Expense Logo" 
@@ -78,15 +78,15 @@ export default function SignInPage() {
                   const target = e.target as HTMLImageElement
                   target.style.display = 'none'
                   if (target.parentElement) {
-                    target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-700"><span class="text-white text-3xl font-black">SE</span></div>'
+                    target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-700"><span class="text-white text-2xl md:text-3xl font-black">SE</span></div>'
                   }
                 }}
               />
             </div>
-            <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-400 to-white mb-2">
+            <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-400 to-white mb-2">
               Connexion
             </h1>
-            <p className="text-sm text-slate-300 font-medium">
+            <p className="text-xs md:text-sm text-slate-300 font-medium">
               Accédez à votre espace de gestion des dépenses
             </p>
           </div>
@@ -108,7 +108,7 @@ export default function SignInPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
-                  className="w-full pl-12 pr-4 py-3.5 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium"
+                  className="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-3 md:py-3.5 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-xl md:rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium text-sm md:text-base"
                   placeholder="Entrez votre nom d'utilisateur"
                   disabled={loading}
                 />
@@ -130,7 +130,7 @@ export default function SignInPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-12 pr-4 py-3.5 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium"
+                  className="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-3 md:py-3.5 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-xl md:rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium text-sm md:text-base"
                   placeholder="Entrez votre mot de passe"
                   disabled={loading}
                 />
@@ -148,7 +148,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading || !username || !password}
-              className="w-full py-4 bg-gradient-to-r from-blue-600/80 to-blue-700/80 hover:from-blue-700/90 hover:to-blue-800/90 text-white rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl font-black text-sm hover:scale-105 disabled:transform-none border border-blue-400/30 ring-1 ring-blue-300/20 flex items-center justify-center gap-2"
+              className="w-full py-3 md:py-4 bg-gradient-to-r from-blue-600/80 to-blue-700/80 hover:from-blue-700/90 hover:to-blue-800/90 text-white rounded-xl md:rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl font-black text-xs md:text-sm hover:scale-105 disabled:transform-none border border-blue-400/30 ring-1 ring-blue-300/20 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
