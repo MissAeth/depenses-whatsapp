@@ -66,12 +66,12 @@ export default function LoginPage() {
       </div>
 
       <div className='relative z-10 max-w-md w-full'>
-        {/* Card bleue avec logo et nom */}
-        <div className='backdrop-blur-xl bg-gradient-to-br from-blue-600/90 via-blue-700/85 to-blue-800/90 rounded-3xl shadow-2xl border border-blue-300/30 p-8 md:p-10'>
+        {/* Card bleue douce avec logo et nom */}
+        <div className='backdrop-blur-xl bg-gradient-to-br from-blue-400/60 via-blue-500/55 to-blue-600/60 rounded-3xl shadow-2xl border border-blue-300/40 p-8 md:p-10'>
           {/* Header avec logo et nom */}
           <div className='text-center mb-8'>
             <div className="flex items-center justify-center gap-4 mb-6">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center overflow-hidden bg-white/95 p-2 shadow-xl ring-2 ring-white/30">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center overflow-hidden bg-white/95 p-2 shadow-xl ring-2 ring-white/40">
                 <img 
                   src="/smart-expense-logo.png?v=2" 
                   alt="SmartExpense Logo" 
@@ -82,15 +82,15 @@ export default function LoginPage() {
                     const target = e.target as HTMLImageElement
                     target.style.display = 'none'
                     if (target.parentElement) {
-                      target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-700"><span class="text-white text-2xl md:text-3xl font-black">SE</span></div>'
+                      target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600"><span class="text-white text-2xl md:text-3xl font-black">SE</span></div>'
                     }
                   }}
                 />
               </div>
-              <h1 className='text-3xl md:text-4xl font-bold text-white tracking-tight'>SmartExpense</h1>
+              <h1 className='text-3xl md:text-4xl font-bold text-white tracking-tight drop-shadow-sm'>SmartExpense</h1>
             </div>
-            <h2 className='text-xl md:text-2xl font-semibold text-white mb-3'>Connexion par téléphone</h2>
-            <p className='text-sm md:text-base text-blue-50/90 font-medium'>Entrez votre numéro (même que WhatsApp) pour accéder à vos dépenses.</p>
+            <h2 className='text-xl md:text-2xl font-semibold text-white mb-3 drop-shadow-sm'>Connexion par téléphone</h2>
+            <p className='text-sm md:text-base text-blue-50/95 font-medium'>Entrez votre numéro (même que WhatsApp) pour accéder à vos dépenses.</p>
           </div>
 
           <form onSubmit={submit} className='space-y-4'>
@@ -100,18 +100,18 @@ export default function LoginPage() {
                 placeholder='Ex: 06 12 34 56 78 ou +33 6 12 34 56 78'
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className='w-full p-4 border-2 border-white/40 bg-white/90 backdrop-blur-md rounded-xl focus:ring-4 focus:ring-white/30 focus:border-white/60 transition-all duration-300 text-blue-900 placeholder:text-blue-400/70 font-medium shadow-lg'
+                className='w-full p-4 border-2 border-white/50 bg-white/95 backdrop-blur-md rounded-xl focus:ring-4 focus:ring-white/30 focus:border-white/70 transition-all duration-300 text-blue-900 placeholder:text-blue-400/70 font-medium shadow-lg'
               />
-              <p className='text-xs text-blue-100/80 mt-2'>
+              <p className='text-xs text-blue-50/90 mt-2'>
                 Formats acceptés : 06..., 07..., +33 6..., +33 7... (convertis automatiquement en 336... ou 337...)
               </p>
             </div>
             
             {message && (
-              <div className={`p-3 rounded-xl text-sm font-semibold ${
+              <div className={`p-3 rounded-xl text-sm font-semibold backdrop-blur-sm ${
                 message.includes('✅') 
-                  ? 'bg-green-500/20 text-green-50 border border-green-300/40' 
-                  : 'bg-red-500/20 text-red-50 border border-red-300/40'
+                  ? 'bg-green-500/25 text-green-50 border border-green-300/50' 
+                  : 'bg-red-500/25 text-red-50 border border-red-300/50'
               }`}>
                 {message}
               </div>
@@ -119,16 +119,16 @@ export default function LoginPage() {
 
             <button 
               disabled={loading || normalizePhone(phone).length < 6} 
-              className='w-full p-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed font-bold text-base shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] disabled:transform-none border-2 border-blue-400/30 ring-2 ring-blue-300/20'
+              className='w-full p-4 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed font-bold text-base shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] disabled:transform-none border-2 border-blue-300/40 ring-2 ring-blue-200/30'
             >
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
           </form>
 
-          <hr className='my-6 border-blue-300/30' />
+          <hr className='my-6 border-blue-200/40' />
           <button 
             onClick={logout} 
-            className='w-full text-sm text-blue-100 hover:text-white font-medium transition-colors'
+            className='w-full text-sm text-blue-50/90 hover:text-white font-medium transition-colors'
           >
             Se déconnecter
           </button>
