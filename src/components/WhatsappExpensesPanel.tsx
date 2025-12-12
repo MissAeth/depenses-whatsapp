@@ -275,14 +275,14 @@ export default function WhatsappExpensesPanel() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between text-sm text-zinc-600">
-            <div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-2 text-xs sm:text-sm text-zinc-600">
+            <div className="whitespace-nowrap">
               Page {page} / {Math.max(1, Math.ceil(total / pageSize))} — {total} résultats
             </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => { if (page > 1) { setPage(page - 1); loadExpenses(); } }} disabled={page <= 1 || loading} className="px-2 py-1 border border-zinc-300 rounded disabled:opacity-50">Précédent</button>
-              <button onClick={() => { const last = Math.max(1, Math.ceil(total / pageSize)); if (page < last) { setPage(page + 1); loadExpenses(); } }} disabled={page >= Math.max(1, Math.ceil(total / pageSize)) || loading} className="px-2 py-1 border border-zinc-300 rounded disabled:opacity-50">Suivant</button>
-              <select value={pageSize} onChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPage(1); loadExpenses({ resetPage: true }) }} className="p-1 border border-zinc-300 rounded">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <button onClick={() => { if (page > 1) { setPage(page - 1); loadExpenses(); } }} disabled={page <= 1 || loading} className="px-2 py-1 border border-zinc-300 rounded disabled:opacity-50 text-xs sm:text-sm whitespace-nowrap">Précédent</button>
+              <button onClick={() => { const last = Math.max(1, Math.ceil(total / pageSize)); if (page < last) { setPage(page + 1); loadExpenses(); } }} disabled={page >= Math.max(1, Math.ceil(total / pageSize)) || loading} className="px-2 py-1 border border-zinc-300 rounded disabled:opacity-50 text-xs sm:text-sm whitespace-nowrap">Suivant</button>
+              <select value={pageSize} onChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPage(1); loadExpenses({ resetPage: true }) }} className="p-1 border border-zinc-300 rounded text-xs sm:text-sm">
                 {[10,20,50,100].map(s => (<option key={s} value={s}>{s}/page</option>))}
               </select>
               <button
@@ -299,9 +299,9 @@ export default function WhatsappExpensesPanel() {
                   u.searchParams.set('format','csv')
                   window.open(u.toString(), '_blank')
                 }}
-                className="px-3 py-1 border border-zinc-300 rounded hover:bg-zinc-50"
+                className="px-2 sm:px-3 py-1 border border-zinc-300 rounded hover:bg-zinc-50 text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
               >
-                Export CSV
+                Exporter CSV
               </button>
             </div>
           </div>
