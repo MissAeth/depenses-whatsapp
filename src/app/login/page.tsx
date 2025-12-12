@@ -58,8 +58,15 @@ export default function LoginPage() {
       </div>
 
       <div className='relative z-10 max-w-md w-full'>
-        {/* Card bleue douce avec logo et nom */}
-        <div className='backdrop-blur-xl bg-gradient-to-br from-blue-400/60 via-blue-500/55 to-blue-600/60 rounded-3xl shadow-2xl border border-blue-300/40 p-8 md:p-10'>
+        {/* Card bleue avec effet vitré et reflet */}
+        <div className='relative backdrop-blur-xl bg-gradient-to-br from-blue-400/60 via-blue-500/55 to-blue-600/60 rounded-3xl shadow-2xl border border-blue-300/40 p-8 md:p-10 overflow-hidden'>
+          {/* Effet de reflet vitré */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent pointer-events-none"></div>
+          <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/10 pointer-events-none rounded-3xl"></div>
+          
+          {/* Contenu avec z-index relatif */}
+          <div className="relative z-10">
             {/* Header avec logo et nom */}
             <div className='text-center mb-8'>
             <div className="flex items-center justify-center gap-4 mb-6">
@@ -81,9 +88,9 @@ export default function LoginPage() {
               </div>
               <h1 className='text-3xl md:text-4xl font-bold text-white tracking-tight drop-shadow-sm'>SmartExpense</h1>
             </div>
-            <h2 className='text-xl md:text-2xl font-semibold text-white mb-3 drop-shadow-sm'>Connexion par téléphone</h2>
-            <p className='text-sm md:text-base text-blue-50/95 font-medium'>Entrez votre numéro (même que WhatsApp) pour accéder à vos dépenses.</p>
-          </div>
+              <h2 className='text-xl md:text-2xl font-semibold text-white mb-3 drop-shadow-sm'>Connexion par téléphone</h2>
+              <p className='text-sm md:text-base text-blue-50/95 font-medium'>Entrez votre numéro (même que WhatsApp) pour accéder à vos dépenses.</p>
+            </div>
 
             <form onSubmit={submit} className='space-y-4'>
             <div>
