@@ -65,11 +65,11 @@ export default function SignInPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-md mx-4 md:mx-auto">
-        {/* Card de connexion moderne */}
-        <div className="glass-modern rounded-3xl shadow-2xl border border-white/40 p-8 md:p-10 hover:shadow-3xl transition-all duration-500">
+        {/* Card de connexion moderne avec fond bleu transparent */}
+        <div className="backdrop-blur-xl bg-gradient-to-br from-blue-600/40 via-blue-700/35 to-blue-800/40 rounded-3xl shadow-2xl border border-blue-300/30 p-8 md:p-10 hover:shadow-3xl transition-all duration-500 ring-2 ring-blue-200/20">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl flex items-center justify-center shadow-2xl overflow-hidden bg-white/90 p-2 md:p-2.5 ring-4 ring-blue-200/50 border-2 border-blue-300/50 mx-auto mb-6 hover:scale-110 transition-transform duration-300">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl flex items-center justify-center shadow-2xl overflow-hidden bg-white/95 p-2 md:p-2.5 ring-4 ring-white/30 border-2 border-white/40 mx-auto mb-6 hover:scale-110 transition-transform duration-300">
               <img 
                 src="/smart-expense-logo.png?v=2" 
                 alt="Smart Expense Logo" 
@@ -85,10 +85,10 @@ export default function SignInPage() {
                 }}
               />
             </div>
-            <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-600 to-blue-800 mb-3 tracking-tight">
+            <h1 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight drop-shadow-lg">
               Connexion
             </h1>
-            <p className="text-sm md:text-base text-blue-600/80 font-medium">
+            <p className="text-sm md:text-base text-blue-50/90 font-medium">
               Accédez à votre espace de gestion des dépenses
             </p>
           </div>
@@ -97,12 +97,12 @@ export default function SignInPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Champ Username */}
             <div>
-              <label htmlFor="username" className="block text-sm font-bold text-blue-900 mb-2">
+              <label htmlFor="username" className="block text-sm font-bold text-white mb-2 drop-shadow-sm">
                 Nom d'utilisateur
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <UserIcon className="h-5 w-5 text-blue-400" />
+                  <UserIcon className="h-5 w-5 text-blue-200" />
                 </div>
                 <input
                   id="username"
@@ -110,7 +110,7 @@ export default function SignInPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
-                  className="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-3 md:py-3.5 backdrop-blur-sm bg-white/60 border-2 border-blue-200/50 rounded-xl md:rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-500 transition-all duration-300 hover:border-blue-300/80 shadow-sm text-blue-900 placeholder:text-blue-400/60 font-medium text-sm md:text-base"
+                  className="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-3 md:py-3.5 backdrop-blur-md bg-white/80 border-2 border-white/40 rounded-xl md:rounded-2xl focus:ring-4 focus:ring-white/30 focus:border-white/60 transition-all duration-300 hover:border-white/50 shadow-lg text-blue-900 placeholder:text-blue-400/70 font-medium text-sm md:text-base"
                   placeholder="Entrez votre nom d'utilisateur"
                   disabled={loading}
                 />
@@ -119,12 +119,12 @@ export default function SignInPage() {
 
             {/* Champ Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-bold text-blue-900 mb-2">
+              <label htmlFor="password" className="block text-sm font-bold text-white mb-2 drop-shadow-sm">
                 Mot de passe
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <LockClosedIcon className="h-5 w-5 text-blue-400" />
+                  <LockClosedIcon className="h-5 w-5 text-blue-200" />
                 </div>
                 <input
                   id="password"
@@ -132,7 +132,7 @@ export default function SignInPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-3 md:py-3.5 backdrop-blur-sm bg-white/60 border-2 border-blue-200/50 rounded-xl md:rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-500 transition-all duration-300 hover:border-blue-300/80 shadow-sm text-blue-900 placeholder:text-blue-400/60 font-medium text-sm md:text-base"
+                  className="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-3 md:py-3.5 backdrop-blur-md bg-white/80 border-2 border-white/40 rounded-xl md:rounded-2xl focus:ring-4 focus:ring-white/30 focus:border-white/60 transition-all duration-300 hover:border-white/50 shadow-lg text-blue-900 placeholder:text-blue-400/70 font-medium text-sm md:text-base"
                   placeholder="Entrez votre mot de passe"
                   disabled={loading}
                 />
@@ -141,7 +141,7 @@ export default function SignInPage() {
 
             {/* Message d'erreur */}
             {error && (
-              <div className="p-4 rounded-xl backdrop-blur-sm bg-red-50/80 border-2 border-red-200/50 text-red-700 text-sm font-medium">
+              <div className="p-4 rounded-xl backdrop-blur-md bg-red-500/20 border-2 border-red-300/40 text-red-50 text-sm font-semibold shadow-lg">
                 {error}
               </div>
             )}
@@ -150,9 +150,9 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading || !username || !password}
-              className="w-full py-4 md:py-5 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 hover:from-blue-700 hover:via-blue-700 hover:to-blue-800 text-white rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl font-bold text-sm md:text-base hover:scale-[1.02] disabled:transform-none border border-blue-500/30 ring-2 ring-blue-400/20 flex items-center justify-center gap-3 relative overflow-hidden group"
+              className="w-full py-4 md:py-5 bg-gradient-to-r from-white/90 via-white/95 to-white/90 hover:from-white hover:via-white hover:to-white text-blue-900 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl font-bold text-sm md:text-base hover:scale-[1.02] disabled:transform-none border-2 border-white/50 ring-2 ring-white/30 flex items-center justify-center gap-3 relative overflow-hidden group"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
               {loading ? (
                 <>
                   <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
@@ -171,9 +171,9 @@ export default function SignInPage() {
           </form>
 
           {/* Informations de test moderne */}
-          <div className="mt-8 p-5 rounded-2xl backdrop-blur-md bg-gradient-to-r from-blue-50/70 to-blue-100/60 border border-blue-200/50 shadow-lg">
-            <p className="text-sm text-blue-800 font-semibold text-center">
-              Compte de test : <span className="text-blue-900 font-bold">compte-test</span> / <span className="text-blue-900 font-bold">test1234</span>
+          <div className="mt-8 p-5 rounded-2xl backdrop-blur-md bg-white/20 border border-white/30 shadow-lg">
+            <p className="text-sm text-blue-50 font-semibold text-center">
+              Compte de test : <span className="text-white font-bold">compte-test</span> / <span className="text-white font-bold">test1234</span>
             </p>
           </div>
         </div>
