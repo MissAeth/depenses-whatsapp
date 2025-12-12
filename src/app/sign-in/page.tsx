@@ -7,8 +7,8 @@ import { isAuthenticated } from '@/lib/auth'
 
 export default function SignInPage() {
   const router = useRouter()
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [username, setUsername] = useState('compte-test')
+  const [password, setPassword] = useState('test1234')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
