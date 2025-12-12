@@ -184,10 +184,15 @@ export default function ExpensesPage() {
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded flex items-center justify-center overflow-hidden">
                     <img 
-                      src="/smart-expense-logo.png" 
+                      src="/smart-expense-logo.png?v=2" 
                       alt="SmartExpense Logo" 
                       className="w-full h-full object-contain"
                       loading="eager"
+                      onError={(e) => {
+                        console.error('Erreur chargement logo:', e)
+                        const target = e.target as HTMLImageElement
+                        target.style.display = 'none'
+                      }}
                     />
                   </div>
                   <h1 className="text-2xl font-semibold text-zinc-900">SmartExpense</h1>

@@ -69,7 +69,7 @@ export default function SignInPage() {
           <div className="text-center mb-8">
             <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-1.5 md:p-2 ring-2 ring-blue-400/50 border border-blue-300/30 mx-auto mb-3 md:mb-4">
               <img 
-                src="/smart-expense-logo.png" 
+                src="/smart-expense-logo.png?v=2" 
                 alt="Smart Expense Logo" 
                 className="w-full h-full object-contain"
                 loading="eager"
