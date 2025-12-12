@@ -63,3 +63,4 @@ Allez sur `http://localhost:3000/whatsapp` et vérifiez que la dépense apparaî
 - Vérifiez les logs pour voir les erreurs Gemini
 - Testez avec `/api/test-ai` pour vérifier la configuration
 
+

@@ -14,14 +14,9 @@ import type { NextRequest } from 'next/server'
 //   }
 // })
 
-// Proxy avec redirection de / vers /whatsapp
+// Proxy sans redirection - la page d'accueil affiche directement les dépenses
 export default function proxy(request: NextRequest) {
-  // Rediriger la page principale vers /whatsapp
-  if (request.nextUrl.pathname === '/') {
-    return NextResponse.redirect(new URL('/whatsapp', request.url))
-  }
-  
-  // Pass through all other requests without authentication
+  // Pass through all requests without authentication
   return NextResponse.next()
 }
 

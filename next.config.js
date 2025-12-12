@@ -17,16 +17,7 @@ const nextConfig = {
     }
     return config;
   },
-  // Redirection de la page principale vers WhatsApp
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/whatsapp',
-        permanent: true,
-      },
-    ];
-  },
+  // Pas de redirection - la page d'accueil affiche directement les dépenses
   // Désactiver l'export statique pour permettre les API routes
   // output: 'export'
 };

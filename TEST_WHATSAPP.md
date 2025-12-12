@@ -74,3 +74,4 @@ Dans le terminal de `npm run dev`, vous devriez voir:
 ✅ **Bon signe**: "📨 Message reçu", "✅ Image téléchargée", "✅ Dépense traitée avec succès!"
 ❌ **Mauvais signe**: "⏭️ Ignoré", "❌ Erreur", "Pas de réponse de l'API"
 
+

@@ -194,3 +194,4 @@ Une fois toutes ces étapes complétées, votre système WhatsApp est opération
 - Le message apparaîtra automatiquement sur `https://votre-app.vercel.app/whatsapp`
 - Les champs seront remplis automatiquement grâce à Gemini
 
+

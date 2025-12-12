@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 // TEMPORAIRE - Clerk désactivé
 // import { ClerkProvider } from '@clerk/nextjs'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import NavigationMenu from '@/components/NavigationMenu'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -42,6 +43,7 @@ export default function RootLayout({
         <div className="min-h-screen">
           {children}
         </div>
+        <NavigationMenu />
         <SpeedInsights />
         <script dangerouslySetInnerHTML={{__html:`if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW registration failed',e));});}`}} />
       </body>

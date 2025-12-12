@@ -142,3 +142,4 @@ Pour une utilisation en production, nous recommandons :
 
 L'OCR classique reste disponible comme fallback gratuit si aucune API n'est configurée.
 
+

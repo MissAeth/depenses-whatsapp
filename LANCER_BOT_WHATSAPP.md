@@ -43,3 +43,4 @@ Appuyez sur `Ctrl + C` dans le terminal du bot.
 1. Arrêtez avec `Ctrl + C`
 2. Relancez avec `npm run whatsapp-bot`
 
+

@@ -63,3 +63,4 @@ Après configuration, quand vous uploadez une image :
 
 Voir le guide complet : `CONFIGURATION_IA.md`
 
+
