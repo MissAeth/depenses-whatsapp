@@ -55,20 +55,21 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 relative">
-      {/* Effets de fond animés */}
+    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Effets de fond animés modernes */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/40 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-300/40 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-100/50 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-gradient-to-br from-blue-300/25 to-blue-500/25 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-br from-blue-200/30 to-blue-400/30 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-50/20 to-transparent"></div>
       </div>
 
       <div className="relative z-10 w-full max-w-md mx-4 md:mx-auto">
-        {/* Card de connexion */}
-        <div className="backdrop-blur-xl bg-white/80 rounded-2xl md:rounded-3xl shadow-2xl border border-blue-200/50 p-6 md:p-8 ring-1 ring-blue-100/50">
+        {/* Card de connexion moderne */}
+        <div className="glass-modern rounded-3xl shadow-2xl border border-white/40 p-8 md:p-10 hover:shadow-3xl transition-all duration-500">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-1.5 md:p-2 ring-2 ring-blue-400/50 border border-blue-300/50 mx-auto mb-3 md:mb-4">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl flex items-center justify-center shadow-2xl overflow-hidden bg-white/90 p-2 md:p-2.5 ring-4 ring-blue-200/50 border-2 border-blue-300/50 mx-auto mb-6 hover:scale-110 transition-transform duration-300">
               <img 
                 src="/smart-expense-logo.png?v=2" 
                 alt="Smart Expense Logo" 
@@ -84,10 +85,10 @@ export default function SignInPage() {
                 }}
               />
             </div>
-            <h1 className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-600 to-blue-800 mb-2">
+            <h1 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-600 to-blue-800 mb-3 tracking-tight">
               Connexion
             </h1>
-            <p className="text-xs md:text-sm text-blue-600/80 font-medium">
+            <p className="text-sm md:text-base text-blue-600/80 font-medium">
               Accédez à votre espace de gestion des dépenses
             </p>
           </div>
@@ -145,12 +146,13 @@ export default function SignInPage() {
               </div>
             )}
 
-            {/* Bouton de connexion */}
+            {/* Bouton de connexion moderne */}
             <button
               type="submit"
               disabled={loading || !username || !password}
-              className="w-full py-3 md:py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl md:rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl font-black text-xs md:text-sm hover:scale-105 disabled:transform-none border border-blue-500/30 ring-1 ring-blue-400/20 flex items-center justify-center gap-2"
+              className="w-full py-4 md:py-5 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 hover:from-blue-700 hover:via-blue-700 hover:to-blue-800 text-white rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl font-bold text-sm md:text-base hover:scale-[1.02] disabled:transform-none border border-blue-500/30 ring-2 ring-blue-400/20 flex items-center justify-center gap-3 relative overflow-hidden group"
             >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
               {loading ? (
                 <>
                   <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
@@ -168,9 +170,9 @@ export default function SignInPage() {
             </button>
           </form>
 
-          {/* Informations de test */}
-          <div className="mt-6 p-4 rounded-xl backdrop-blur-sm bg-blue-50/60 border border-blue-200/50">
-            <p className="text-xs text-blue-700 font-medium text-center">
+          {/* Informations de test moderne */}
+          <div className="mt-8 p-5 rounded-2xl backdrop-blur-md bg-gradient-to-r from-blue-50/70 to-blue-100/60 border border-blue-200/50 shadow-lg">
+            <p className="text-sm text-blue-800 font-semibold text-center">
               Compte de test : <span className="text-blue-900 font-bold">compte-test</span> / <span className="text-blue-900 font-bold">test1234</span>
             </p>
           </div>

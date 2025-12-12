@@ -105,8 +105,8 @@ export default function NavigationMenu() {
   const navItems = [...baseNavItems, authNavItem]
 
   return (
-    <nav className="fixed left-2 md:left-6 top-1/2 -translate-y-1/2 z-50">
-      <div className="backdrop-blur-xl bg-white/70 rounded-xl border border-blue-200/50 shadow-xl p-1.5 md:p-3 space-y-1.5 md:space-y-2">
+    <nav className="fixed left-3 md:left-8 top-1/2 -translate-y-1/2 z-50">
+      <div className="glass-modern rounded-2xl shadow-2xl p-2 md:p-3 space-y-2 border border-white/40">
         {navItems.map((item) => {
           const active = isActive(item.path)
           const Icon = active ? item.iconSolid : item.icon
@@ -122,24 +122,27 @@ export default function NavigationMenu() {
                   }
                 }}
                 className={`
-                  w-10 h-10 md:w-14 md:h-14 rounded-lg flex items-center justify-center
-                  transition-all duration-300
+                  w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center
+                  transition-all duration-300 relative overflow-hidden
                   ${
                     active
-                      ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg scale-105'
-                      : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 backdrop-blur-sm'
+                      ? 'bg-gradient-to-br from-blue-600 via-blue-600 to-blue-700 text-white shadow-xl scale-110 ring-2 ring-blue-400/50'
+                      : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50/60 backdrop-blur-sm hover:scale-105'
                   }
                 `}
                 aria-label={item.label}
               >
-                <Icon className="w-5 h-5 md:w-6 md:h-6" />
+                {active && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
+                )}
+                <Icon className={`w-5 h-5 md:w-6 md:h-6 relative z-10 ${active ? 'drop-shadow-lg' : ''}`} />
               </button>
               
-              {/* Tooltip - Masqué sur mobile, visible sur desktop */}
-              <div className="hidden md:block absolute left-full ml-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                <div className="backdrop-blur-xl bg-blue-900/90 text-white text-sm font-medium px-3 py-2 rounded-lg shadow-xl whitespace-nowrap border border-blue-700/50">
+              {/* Tooltip moderne - Masqué sur mobile, visible sur desktop */}
+              <div className="hidden md:block absolute left-full ml-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none transform translate-x-2 group-hover:translate-x-0">
+                <div className="glass-dark rounded-xl text-white text-sm font-semibold px-4 py-2.5 shadow-2xl whitespace-nowrap border border-white/20">
                   {item.label}
-                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-blue-900/90"></div>
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-blue-900/20"></div>
                 </div>
               </div>
             </div>
