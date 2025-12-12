@@ -149,13 +149,11 @@ export default function ExpensesPage() {
   }
 
   return (
-    <main className="min-h-screen p-4 md:p-6 relative overflow-hidden">
-      {/* Effets de fond animés modernes */}
+    <main className="min-h-screen bg-white p-4 md:p-6 relative overflow-hidden">
+      {/* Effets de fond animés subtils */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-gradient-to-br from-blue-300/25 to-blue-500/25 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-br from-blue-200/30 to-blue-400/30 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-50/20 to-transparent"></div>
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-50/50 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl"></div>
       </div>
 
       <div className="max-w-5xl mx-auto relative z-10">
@@ -189,8 +187,13 @@ export default function ExpensesPage() {
         </div>
 
         {/* Header moderne */}
-        <div className="glass-modern rounded-3xl shadow-2xl overflow-hidden mb-8 border border-white/40 hover:shadow-3xl transition-all duration-500">
-          <div className="bg-gradient-to-r from-blue-600/10 via-blue-500/10 to-blue-600/10 p-8 border-b border-white/20 backdrop-blur-sm">
+        <div className="relative backdrop-blur-xl bg-gradient-to-br from-blue-400/60 via-blue-500/55 to-blue-600/60 rounded-3xl shadow-2xl overflow-hidden mb-8 border border-blue-300/40">
+          {/* Effet de reflet vitré */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent pointer-events-none"></div>
+          <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/10 pointer-events-none rounded-3xl"></div>
+          
+          <div className="relative z-10 p-8 border-b border-white/20 backdrop-blur-sm">
             <div className="flex justify-between items-center">
               <div>
                 <div className="flex items-center gap-4 mb-3">
@@ -208,8 +211,8 @@ export default function ExpensesPage() {
                     />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-700 via-blue-600 to-blue-800 bg-clip-text text-transparent tracking-tight">SmartExpense</h1>
-                    <p className="text-blue-600/70 mt-1 text-sm font-medium">
+                    <h1 className="text-3xl font-bold text-white tracking-tight drop-shadow-sm">SmartExpense</h1>
+                    <p className="text-blue-50/95 mt-1 text-sm font-medium">
                       Gestion des notes de frais
                       {isRefreshing && <span className="ml-2 animate-pulse">🔄</span>}
                     </p>
@@ -219,25 +222,32 @@ export default function ExpensesPage() {
               <button
                 onClick={() => loadExpenses()}
                 disabled={loading}
-                className="flex items-center gap-2.5 px-6 py-3 text-sm font-semibold bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-400/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl hover:scale-105 disabled:transform-none"
+                className="flex items-center gap-2.5 px-6 py-3 text-sm font-semibold bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-400/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl hover:shadow-2xl hover:scale-105 disabled:transform-none border-2 border-blue-600/50 ring-2 ring-blue-500/30 relative overflow-hidden group"
               >
-                <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-                Actualiser
+                {/* Effet de brillance sur le bouton */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <ArrowPathIcon className={`w-5 h-5 relative z-10 ${loading ? 'animate-spin' : ''}`} />
+                <span className="relative z-10">Actualiser</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* Liste des dépenses moderne */}
-        <div ref={expensesRef} className="glass-modern rounded-3xl shadow-2xl overflow-hidden border border-white/40">
-          <div className="bg-gradient-to-r from-blue-50/40 via-blue-100/30 to-blue-50/40 backdrop-blur-sm p-8 border-b border-white/20">
+        <div ref={expensesRef} className="relative backdrop-blur-xl bg-gradient-to-br from-blue-400/60 via-blue-500/55 to-blue-600/60 rounded-3xl shadow-2xl overflow-hidden border border-blue-300/40">
+          {/* Effet de reflet vitré */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent pointer-events-none"></div>
+          <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/10 pointer-events-none rounded-3xl"></div>
+          
+          <div className="relative z-10 p-8 border-b border-white/20 backdrop-blur-sm">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg ring-2 ring-blue-200/50">
                 <EyeIcon className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-blue-900">Toutes les dépenses</h2>
-                <p className="text-sm text-blue-600/80 font-medium">
+                <h2 className="text-xl font-bold text-white drop-shadow-sm">Toutes les dépenses</h2>
+                <p className="text-sm text-blue-50/95 font-medium">
                   {expenses.length} dépense{expenses.length > 1 ? 's' : ''} reçue{expenses.length > 1 ? 's' : ''}
                   {lastRefresh && (
                     <span className="ml-2 text-xs">
@@ -249,50 +259,50 @@ export default function ExpensesPage() {
             </div>
           </div>
 
-          <div className="divide-y divide-blue-100/30">
+          <div className="relative z-10 divide-y divide-white/20">
             {expenses.length === 0 ? (
               <div className="p-20 text-center">
-                <div className="w-28 h-28 bg-gradient-to-br from-blue-100/60 to-blue-200/60 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-6 border border-blue-200/50 shadow-xl">
-                  <DevicePhoneMobileIcon className="w-14 h-14 text-blue-500" />
+                <div className="w-28 h-28 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/30 shadow-xl">
+                  <DevicePhoneMobileIcon className="w-14 h-14 text-white" />
                 </div>
-                <p className="text-blue-900 font-bold text-xl mb-2">Aucune dépense reçue</p>
-                <p className="text-sm text-blue-600/70">Les dépenses apparaîtront ici automatiquement</p>
+                <p className="text-white font-bold text-xl mb-2 drop-shadow-sm">Aucune dépense reçue</p>
+                <p className="text-sm text-blue-50/95">Les dépenses apparaîtront ici automatiquement</p>
               </div>
             ) : (
               expenses.map((expense, index) => (
                 <div 
                   key={expense.id} 
-                  className="p-8 hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-transparent backdrop-blur-sm transition-all duration-300 group"
+                  className="p-8 hover:bg-white/10 backdrop-blur-sm transition-all duration-300 group"
                 >
                   <div className="flex justify-between items-start mb-5">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-4 flex-wrap">
-                        <span className="text-4xl font-bold bg-gradient-to-r from-blue-700 via-blue-600 to-blue-800 bg-clip-text text-transparent">
+                        <span className="text-4xl font-bold text-white drop-shadow-lg">
                           {expense.amount}€
                         </span>
-                        <span className="px-4 py-1.5 bg-gradient-to-r from-blue-100/70 to-blue-200/70 backdrop-blur-sm text-blue-800 text-xs font-bold rounded-full border border-blue-300/50 shadow-sm">
+                        <span className="px-4 py-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-bold rounded-full border border-white/30 shadow-sm">
                           {expense.category}
                         </span>
-                        <span className="px-4 py-1.5 bg-gradient-to-r from-blue-100/70 to-blue-200/70 backdrop-blur-sm text-blue-800 text-xs font-bold rounded-full border border-blue-300/50 shadow-sm">
+                        <span className="px-4 py-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-bold rounded-full border border-white/30 shadow-sm">
                           {expense.source}
                         </span>
-                        <span className="px-4 py-1.5 bg-gradient-to-r from-blue-100/70 to-blue-200/70 backdrop-blur-sm text-blue-800 text-xs font-bold rounded-full border border-blue-300/50 shadow-sm">
+                        <span className="px-4 py-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-bold rounded-full border border-white/30 shadow-sm">
                           {Math.round(expense.confidence * 100)}% confiance
                         </span>
                       </div>
-                      <p className="text-blue-900 font-bold text-xl mb-2 break-words">{expense.merchant}</p>
-                      <p className="text-sm text-blue-700/80 break-words">{expense.description}</p>
+                      <p className="text-white font-bold text-xl mb-2 break-words drop-shadow-sm">{expense.merchant}</p>
+                      <p className="text-sm text-blue-50/95 break-words">{expense.description}</p>
                     </div>
                   </div>
 
                   {expense.original_message && (
-                    <div className="bg-gradient-to-r from-blue-50/50 to-blue-100/40 backdrop-blur-md p-5 rounded-xl border border-blue-200/50 mt-5 shadow-sm">
-                      <p className="text-sm text-blue-800 mb-2 break-words">
-                        <strong className="text-blue-900 font-bold">Message original:</strong> &quot;{expense.original_message}&quot;
+                    <div className="bg-white/20 backdrop-blur-md p-5 rounded-xl border border-white/30 mt-5 shadow-sm">
+                      <p className="text-sm text-white mb-2 break-words drop-shadow-sm">
+                        <strong className="font-bold">Message original:</strong> &quot;{expense.original_message}&quot;
                       </p>
-                      <p className="text-xs text-blue-600/70 flex items-center gap-2 flex-wrap">
+                      <p className="text-xs text-blue-50/90 flex items-center gap-2 flex-wrap">
                         <span>De:</span>
-                        <span className="font-semibold text-blue-700">{expense.whatsapp_from}</span>
+                        <span className="font-semibold">{expense.whatsapp_from}</span>
                         <span className="mx-1">•</span>
                         <span>{new Date(expense.received_at).toLocaleString('fr-FR')}</span>
                       </p>

@@ -83,46 +83,54 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen p-4 md:p-6 relative overflow-hidden">
-      {/* Effets de fond animés modernes */}
+    <main className="min-h-screen bg-white p-4 md:p-6 relative overflow-hidden">
+      {/* Effets de fond animés subtils */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-gradient-to-br from-blue-300/25 to-blue-500/25 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-br from-blue-200/30 to-blue-400/30 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-50/20 to-transparent"></div>
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-50/50 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl"></div>
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Auth Banner moderne */}
         {userPhone && (
-          <div className="mb-6 glass-modern rounded-2xl p-4 flex items-center justify-between shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/40">
+          <div className="mb-6 relative backdrop-blur-xl bg-gradient-to-br from-blue-400/60 via-blue-500/55 to-blue-600/60 rounded-2xl p-4 flex items-center justify-between shadow-2xl border border-blue-300/40 overflow-hidden">
+            {/* Effet de reflet vitré */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent pointer-events-none"></div>
+            <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent pointer-events-none"></div>
+            <div className="relative z-10 w-full flex items-center justify-between">
             <div className="flex items-center gap-3 text-sm">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <span className="text-blue-800 font-medium">Connecté en tant que <strong className="text-blue-900 font-bold">{userPhone}</strong></span>
+              <span className="text-white font-medium drop-shadow-sm">Connecté en tant que <strong className="font-bold">{userPhone}</strong></span>
             </div>
             <div className="flex items-center gap-3">
               <a
                 href="/account"
-                className="px-4 py-2 text-sm font-medium text-blue-700 hover:text-blue-900 bg-white/60 hover:bg-white/80 border border-blue-200/50 rounded-xl hover:border-blue-300/70 backdrop-blur-sm transition-all duration-300 hover:scale-105 shadow-sm"
+                className="px-4 py-2 text-sm font-medium text-white bg-white/20 hover:bg-white/30 border border-white/30 rounded-xl backdrop-blur-sm transition-all duration-300 hover:scale-105 shadow-lg"
               >
                 Mon compte
               </a>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 text-sm font-medium text-blue-700 hover:text-blue-900 bg-white/60 hover:bg-white/80 border border-blue-200/50 rounded-xl hover:border-blue-300/70 backdrop-blur-sm transition-all duration-300 hover:scale-105 shadow-sm"
+                className="px-4 py-2 text-sm font-medium text-white bg-white/20 hover:bg-white/30 border border-white/30 rounded-xl backdrop-blur-sm transition-all duration-300 hover:scale-105 shadow-lg"
               >
                 Déconnexion
               </button>
             </div>
+            </div>
           </div>
         )}
 
-        <div className="glass-modern rounded-3xl shadow-2xl overflow-hidden border border-white/40 hover:shadow-3xl transition-all duration-500">
-          <div className="bg-gradient-to-r from-blue-600/10 via-blue-500/10 to-blue-600/10 p-8 border-b border-white/20 backdrop-blur-sm">
+        <div className="relative backdrop-blur-xl bg-gradient-to-br from-blue-400/60 via-blue-500/55 to-blue-600/60 rounded-3xl shadow-2xl border border-blue-300/40 overflow-hidden">
+          {/* Effet de reflet vitré */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent pointer-events-none"></div>
+          <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/10 pointer-events-none rounded-3xl"></div>
+          
+          <div className="relative z-10 p-8 border-b border-white/20 backdrop-blur-sm">
             <div className="flex justify-between items-center">
             <div>
               <div className="flex items-center gap-4 mb-3">
@@ -140,19 +148,19 @@ export default function Home() {
                   />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-700 via-blue-600 to-blue-800 bg-clip-text text-transparent tracking-tight">SmartExpense</h1>
-                  <p className="text-blue-600/70 mt-1 text-sm font-medium">Gestion intelligente avec IA Gemini</p>
+                  <h1 className="text-3xl font-bold text-white tracking-tight drop-shadow-sm">SmartExpense</h1>
+                  <p className="text-blue-50/95 mt-1 text-sm font-medium">Gestion intelligente avec IA Gemini</p>
                 </div>
               </div>
             </div>
-            <div className="inline-flex rounded-2xl border border-blue-200/50 bg-white/60 backdrop-blur-md overflow-hidden shadow-lg p-1">
+            <div className="inline-flex rounded-2xl border border-white/30 bg-white/20 backdrop-blur-md overflow-hidden shadow-lg p-1">
               <button 
                 id="tab-expenses" 
                 onClick={() => setActiveTab('expenses')} 
                 className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
                   activeTab === 'expenses' 
-                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg scale-105' 
-                    : 'text-blue-700 hover:bg-blue-50/60 hover:text-blue-900'
+                    ? 'bg-gradient-to-r from-blue-700 to-blue-800 text-white shadow-xl scale-105' 
+                    : 'text-white/90 hover:bg-white/20 hover:text-white'
                 }`}
               >
                 Dépenses
@@ -161,8 +169,8 @@ export default function Home() {
                 onClick={() => setActiveTab('analytics')} 
                 className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
                   activeTab === 'analytics' 
-                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg scale-105' 
-                    : 'text-blue-700 hover:bg-blue-50/60 hover:text-blue-900'
+                    ? 'bg-gradient-to-r from-blue-700 to-blue-800 text-white shadow-xl scale-105' 
+                    : 'text-white/90 hover:bg-white/20 hover:text-white'
                 }`}
               >
                 Analytics
@@ -170,8 +178,13 @@ export default function Home() {
             </div>
           </div>
         </div>
+        </div>
         
-        <div className="p-8 space-y-8 bg-gradient-to-b from-white/50 to-white/30 backdrop-blur-sm">
+        <div className="mt-6 relative backdrop-blur-xl bg-gradient-to-br from-blue-400/60 via-blue-500/55 to-blue-600/60 rounded-3xl shadow-2xl border border-blue-300/40 overflow-hidden">
+          {/* Effet de reflet vitré */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent pointer-events-none"></div>
+          <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent pointer-events-none"></div>
+          <div className="relative z-10 p-8 space-y-8">
           {activeTab === 'expenses' && (
             <div className="space-y-6">
               {/* Formulaire de capture et création de dépense */}
@@ -188,7 +201,7 @@ export default function Home() {
               )}
               
               {/* Séparateur visuel */}
-              <div className="border-t border-zinc-200 my-6"></div>
+              <div className="border-t border-white/20 my-6"></div>
               
               {/* Liste des dépenses */}
               <ExpensesEmbed />
@@ -201,8 +214,8 @@ export default function Home() {
               <AnalyticsEmbed />
             </div>
           )}
+          </div>
         </div>
-      </div>
       </div>
     </main>
   )

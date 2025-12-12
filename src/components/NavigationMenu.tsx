@@ -106,7 +106,11 @@ export default function NavigationMenu() {
 
   return (
     <nav className="fixed left-3 md:left-8 top-1/2 -translate-y-1/2 z-50">
-      <div className="glass-modern rounded-2xl shadow-2xl p-2 md:p-3 space-y-2 border border-white/40">
+      <div className="relative backdrop-blur-xl bg-gradient-to-br from-blue-400/60 via-blue-500/55 to-blue-600/60 rounded-2xl shadow-2xl p-2 md:p-3 space-y-2 border border-blue-300/40 overflow-hidden">
+        {/* Effet de reflet vitré */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent pointer-events-none"></div>
+        <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent pointer-events-none"></div>
+        <div className="relative z-10 space-y-2">
         {navItems.map((item) => {
           const active = isActive(item.path)
           const Icon = active ? item.iconSolid : item.icon
@@ -126,8 +130,8 @@ export default function NavigationMenu() {
                   transition-all duration-300 relative overflow-hidden
                   ${
                     active
-                      ? 'bg-gradient-to-br from-blue-600 via-blue-600 to-blue-700 text-white shadow-xl scale-110 ring-2 ring-blue-400/50'
-                      : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50/60 backdrop-blur-sm hover:scale-105'
+                      ? 'bg-gradient-to-r from-blue-700 to-blue-800 text-white shadow-xl scale-110 ring-2 ring-blue-400/50'
+                      : 'text-white/90 hover:text-white hover:bg-white/20 backdrop-blur-sm hover:scale-105'
                   }
                 `}
                 aria-label={item.label}
@@ -140,14 +144,17 @@ export default function NavigationMenu() {
               
               {/* Tooltip moderne - Masqué sur mobile, visible sur desktop */}
               <div className="hidden md:block absolute left-full ml-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none transform translate-x-2 group-hover:translate-x-0">
-                <div className="glass-dark rounded-xl text-white text-sm font-semibold px-4 py-2.5 shadow-2xl whitespace-nowrap border border-white/20">
-                  {item.label}
-                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-blue-900/20"></div>
+                <div className="relative backdrop-blur-xl bg-gradient-to-br from-blue-400/60 via-blue-500/55 to-blue-600/60 rounded-xl text-white text-sm font-semibold px-4 py-2.5 shadow-2xl whitespace-nowrap border border-blue-300/40 overflow-hidden">
+                  {/* Effet de reflet vitré */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent pointer-events-none"></div>
+                  <span className="relative z-10">{item.label}</span>
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-blue-400/60"></div>
                 </div>
               </div>
             </div>
           )
         })}
+        </div>
       </div>
     </nav>
   )
