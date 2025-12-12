@@ -68,11 +68,11 @@ export default function EditExpenseModal({ expense, onClose, onSave, onDelete }:
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/70 flex items-start justify-center p-4 pt-8 md:pt-12"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
