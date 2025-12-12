@@ -60,8 +60,8 @@ export default function LoginPage() {
       <div className='relative z-10 max-w-md w-full'>
         {/* Card bleue douce avec logo et nom */}
         <div className='backdrop-blur-xl bg-gradient-to-br from-blue-400/60 via-blue-500/55 to-blue-600/60 rounded-3xl shadow-2xl border border-blue-300/40 p-8 md:p-10'>
-          {/* Header avec logo et nom */}
-          <div className='text-center mb-8'>
+            {/* Header avec logo et nom */}
+            <div className='text-center mb-8'>
             <div className="flex items-center justify-center gap-4 mb-6">
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center overflow-hidden bg-white/95 p-2 shadow-xl ring-2 ring-white/40">
                 <img 
@@ -85,7 +85,7 @@ export default function LoginPage() {
             <p className='text-sm md:text-base text-blue-50/95 font-medium'>Entrez votre numéro (même que WhatsApp) pour accéder à vos dépenses.</p>
           </div>
 
-          <form onSubmit={submit} className='space-y-4'>
+            <form onSubmit={submit} className='space-y-4'>
             <div>
               <input
                 type='tel'
@@ -109,13 +109,16 @@ export default function LoginPage() {
               </div>
             )}
 
-            <button 
-              disabled={loading || normalizePhone(phone).length < 6} 
-              className='w-full p-4 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed font-bold text-base shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] disabled:transform-none border-2 border-blue-300/40 ring-2 ring-blue-200/30'
-            >
-              {loading ? 'Connexion…' : 'Se connecter'}
-            </button>
-          </form>
+              <button 
+                disabled={loading || normalizePhone(phone).length < 6} 
+                className='w-full p-4 bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed font-bold text-base shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] disabled:transform-none border-2 border-blue-600/50 ring-2 ring-blue-500/30 relative overflow-hidden group'
+              >
+                {/* Effet de brillance sur le bouton */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                <span className="relative z-10">{loading ? 'Connexion…' : 'Se connecter'}</span>
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
