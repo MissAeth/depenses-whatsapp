@@ -58,8 +58,8 @@ export default function SignInPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50/40 flex items-center justify-center p-6">
       {/* Effets de fond animés */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
       <div className="relative z-10 w-full max-w-md">
@@ -67,7 +67,7 @@ export default function SignInPage() {
         <div className="backdrop-blur-xl bg-gradient-to-br from-slate-800/90 via-slate-800/80 to-slate-900/90 rounded-3xl shadow-2xl border border-slate-700/50 p-8 ring-1 ring-white/10">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-2 ring-2 ring-amber-300/50 border border-amber-200/30 mx-auto mb-4">
+            <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-2 ring-2 ring-blue-400/50 border border-blue-300/30 mx-auto mb-4">
               <img 
                 src="/smart-expense-logo.jpg?v=1" 
                 alt="Smart Expense Logo" 
@@ -78,12 +78,12 @@ export default function SignInPage() {
                   const target = e.target as HTMLImageElement
                   target.style.display = 'none'
                   if (target.parentElement) {
-                    target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-400 to-yellow-400"><span class="text-white text-3xl font-black">SE</span></div>'
+                    target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-700"><span class="text-white text-3xl font-black">SE</span></div>'
                   }
                 }}
               />
             </div>
-            <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-400 to-white mb-2">
+            <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-400 to-white mb-2">
               Connexion
             </h1>
             <p className="text-sm text-slate-300 font-medium">
@@ -108,7 +108,7 @@ export default function SignInPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
-                  className="w-full pl-12 pr-4 py-3.5 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-2xl focus:ring-4 focus:ring-amber-400/30 focus:border-amber-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium"
+                  className="w-full pl-12 pr-4 py-3.5 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium"
                   placeholder="Entrez votre nom d'utilisateur"
                   disabled={loading}
                 />
@@ -130,7 +130,7 @@ export default function SignInPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-12 pr-4 py-3.5 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-2xl focus:ring-4 focus:ring-amber-400/30 focus:border-amber-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium"
+                  className="w-full pl-12 pr-4 py-3.5 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium"
                   placeholder="Entrez votre mot de passe"
                   disabled={loading}
                 />
@@ -148,7 +148,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading || !username || !password}
-              className="w-full py-4 bg-gradient-to-r from-amber-400/80 to-yellow-400/80 hover:from-amber-500/90 hover:to-yellow-500/90 text-white rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl font-black text-sm hover:scale-105 disabled:transform-none border border-amber-300/30 ring-1 ring-amber-200/20 flex items-center justify-center gap-2"
+              className="w-full py-4 bg-gradient-to-r from-blue-600/80 to-blue-700/80 hover:from-blue-700/90 hover:to-blue-800/90 text-white rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl font-black text-sm hover:scale-105 disabled:transform-none border border-blue-400/30 ring-1 ring-blue-300/20 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -170,7 +170,7 @@ export default function SignInPage() {
           {/* Informations de test */}
           <div className="mt-6 p-4 rounded-2xl backdrop-blur-sm bg-slate-700/30 border border-slate-600/50">
             <p className="text-xs text-slate-400 font-medium text-center">
-              Compte de test : <span className="text-amber-400 font-bold">compte-test</span> / <span className="text-amber-400 font-bold">test1234</span>
+              Compte de test : <span className="text-blue-400 font-bold">compte-test</span> / <span className="text-blue-400 font-bold">test1234</span>
             </p>
           </div>
         </div>

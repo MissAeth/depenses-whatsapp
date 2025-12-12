@@ -137,7 +137,7 @@ export default function HomePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50/40 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-600 font-medium">Vérification de l'authentification...</p>
         </div>
       </div>
@@ -148,8 +148,8 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50/40 relative overflow-hidden">
       {/* Effets de fond animés */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-yellow-200/30 rounded-full blur-3xl animate-pulse delay-2000"></div>
       </div>
 
@@ -187,7 +187,7 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-1.5 ring-2 ring-amber-300/50 border border-amber-200/30">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-1.5 ring-2 ring-blue-400/50 border border-blue-300/30">
                 <img 
                   src="/smart-expense-logo.jpg?v=1" 
                   alt="Smart Expense Logo" 
@@ -198,13 +198,13 @@ export default function HomePage() {
                     const target = e.target as HTMLImageElement
                     target.style.display = 'none'
                     if (target.parentElement) {
-                      target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-400 to-yellow-400"><span class="text-white text-2xl font-black">SE</span></div>'
+                      target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-700"><span class="text-white text-2xl font-black">SE</span></div>'
                     }
                   }}
                 />
               </div>
               <div>
-                <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-amber-600 to-slate-900 tracking-tight">
+                <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-600 to-blue-800 tracking-tight">
                   Dépenses
                 </h1>
                 <p className="text-xs text-slate-500 font-medium mt-0.5">
@@ -223,7 +223,7 @@ export default function HomePage() {
           <div className="p-8 border-b border-slate-700/50">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl backdrop-blur-sm bg-gradient-to-br from-amber-400/80 to-yellow-400/80 flex items-center justify-center shadow-lg ring-2 ring-amber-300/50 border border-amber-300/30">
+                <div className="w-14 h-14 rounded-2xl backdrop-blur-sm bg-gradient-to-br from-blue-600/80 to-blue-700/80 flex items-center justify-center shadow-lg ring-2 ring-blue-400/50 border border-blue-500/30">
                   <EyeIcon className="w-7 h-7 text-white" />
                 </div>
                 <div>
@@ -241,7 +241,7 @@ export default function HomePage() {
               <button
                 onClick={() => loadExpenses()}
                 disabled={loading}
-                className="flex items-center gap-2.5 px-6 py-3.5 text-sm text-white backdrop-blur-sm bg-gradient-to-r from-yellow-400/80 to-amber-400/80 hover:from-yellow-500/90 hover:to-amber-500/90 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl font-black hover:scale-105 border border-yellow-300/30 ring-1 ring-yellow-200/20"
+                className="flex items-center gap-2.5 px-6 py-3.5 text-sm text-white backdrop-blur-sm bg-gradient-to-r from-blue-600/80 to-blue-700/80 hover:from-blue-700/90 hover:to-blue-800/90 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl font-black hover:scale-105 border border-blue-400/30 ring-1 ring-blue-300/20"
               >
                 <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                 Actualiser
@@ -271,7 +271,7 @@ export default function HomePage() {
                         <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-amber-400">
                           {expense.amount}€
                         </span>
-                        <span className="px-4 py-1.5 backdrop-blur-md bg-gradient-to-r from-amber-500/50 to-yellow-500/50 border border-amber-400/70 text-amber-100 text-xs font-black rounded-full shadow-sm ring-1 ring-amber-300/30">
+                        <span className="px-4 py-1.5 backdrop-blur-md bg-gradient-to-r from-yellow-500/50 to-yellow-600/50 border border-yellow-400/70 text-yellow-100 text-xs font-black rounded-full shadow-sm ring-1 ring-yellow-300/30">
                           {expense.category}
                         </span>
                         <span className="px-4 py-1.5 backdrop-blur-sm bg-slate-700/40 border border-slate-600/60 text-slate-200 text-xs font-black rounded-full">

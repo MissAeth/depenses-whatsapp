@@ -126,7 +126,7 @@ export default function NavigationMenu() {
                   transition-all duration-300
                   ${
                     active
-                      ? 'bg-gradient-to-br from-amber-400/80 to-yellow-400/80 text-white shadow-lg scale-105 border border-amber-300/30 ring-1 ring-amber-200/20'
+                      ? 'bg-gradient-to-br from-blue-600/80 to-blue-700/80 text-white shadow-lg scale-105 border border-blue-400/30 ring-1 ring-blue-300/20'
                       : 'text-slate-300 hover:text-white hover:bg-slate-700/60 hover:scale-105'
                   }
                 `}
