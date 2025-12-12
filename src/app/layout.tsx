@@ -6,8 +6,8 @@ import NavigationMenu from '@/components/NavigationMenu'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Billz',
-  description: "Application de gestion des notes de frais Billz",
+  title: 'Smart Expense',
+  description: "Application de gestion des notes de frais Smart Expense",
   manifest: '/manifest.json',
 }
 
@@ -33,10 +33,10 @@ export default function RootLayout({
         <meta name="theme-color" content="#18181B" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Billz" />
+        <meta name="apple-mobile-web-app-title" content="Smart Expense" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <link rel="icon" href="/billz-logo.png" />
-        <link rel="apple-touch-icon" href="/billz-logo.png" />
+        <link rel="icon" href="/smart-expense-logo.png" />
+        <link rel="apple-touch-icon" href="/smart-expense-logo.png" />
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-sans">

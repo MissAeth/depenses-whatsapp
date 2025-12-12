@@ -300,22 +300,22 @@ export default function WhatsAppPage() {
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-1.5 ring-2 ring-amber-300/50 border border-amber-200/30">
                 <img 
-                  src="/billz-logo.png" 
-                  alt="Billz Logo" 
+                  src="/smart-expense-logo.png" 
+                  alt="Smart Expense Logo" 
                   className="w-full h-full object-contain"
                   loading="eager"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement
                     target.style.display = 'none'
                     if (target.parentElement) {
-                      target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-400 to-yellow-400"><span class="text-white text-2xl font-black">B</span></div>'
+                      target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-400 to-yellow-400"><span class="text-white text-2xl font-black">SE</span></div>'
                     }
                   }}
                 />
               </div>
               <div>
                 <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-amber-600 to-slate-900 tracking-tight">
-                  Billz WhatsApp
+                  Smart Expense WhatsApp
                 </h1>
                 <p className="text-xs text-slate-500 font-medium mt-0.5">
                   Réception automatique • IA Gemini

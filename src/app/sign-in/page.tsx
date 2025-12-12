@@ -69,15 +69,15 @@ export default function SignInPage() {
           <div className="text-center mb-8">
             <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm bg-white/90 p-2 ring-2 ring-amber-300/50 border border-amber-200/30 mx-auto mb-4">
               <img 
-                src="/billz-logo.png" 
-                alt="Billz Logo" 
+                src="/smart-expense-logo.png" 
+                alt="Smart Expense Logo" 
                 className="w-full h-full object-contain"
                 loading="eager"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
                   target.style.display = 'none'
                   if (target.parentElement) {
-                    target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-400 to-yellow-400"><span class="text-white text-3xl font-black">B</span></div>'
+                    target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-400 to-yellow-400"><span class="text-white text-3xl font-black">SE</span></div>'
                   }
                 }}
               />
