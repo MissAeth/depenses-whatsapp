@@ -50,83 +50,93 @@ export default function LoginPage() {
 
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-white p-4 relative overflow-hidden'>
-      {/* Effets de fond animés subtils */}
+    <div className='min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 p-4 relative overflow-hidden'>
+      {/* Effets de fond subtils */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-50/50 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-700/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-800/20 rounded-full blur-3xl"></div>
       </div>
 
-      <div className='relative z-10 max-w-md w-full'>
-        {/* Card bleue avec effet vitré et reflet */}
-        <div className='relative backdrop-blur-xl bg-gradient-to-br from-blue-400/60 via-blue-500/55 to-blue-600/60 rounded-3xl shadow-2xl border border-blue-300/40 p-8 md:p-10 overflow-hidden'>
-          {/* Effet de reflet vitré */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent pointer-events-none"></div>
-          <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/15 to-transparent pointer-events-none"></div>
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/10 pointer-events-none rounded-3xl"></div>
-          
-          {/* Contenu avec z-index relatif */}
-          <div className="relative z-10">
-            {/* Header avec logo et nom */}
-            <div className='text-center mb-8'>
-            <div className="flex items-center justify-center gap-4 mb-6">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center overflow-hidden bg-white/95 p-2 shadow-xl ring-2 ring-white/40">
-                <img 
-                  src="/smart-expense-logo.png?v=2" 
-                  alt="SmartExpense Logo" 
-                  className="w-full h-full object-contain"
-                  loading="eager"
-                  onError={(e) => {
-                    console.error('Erreur chargement logo:', e)
-                    const target = e.target as HTMLImageElement
-                    target.style.display = 'none'
-                    if (target.parentElement) {
-                      target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600"><span class="text-white text-2xl md:text-3xl font-black">SE</span></div>'
-                    }
-                  }}
-                />
-              </div>
-              <h1 className='text-3xl md:text-4xl font-bold text-white tracking-tight drop-shadow-sm'>SmartExpense</h1>
-            </div>
-              <h2 className='text-xl md:text-2xl font-semibold text-white mb-3 drop-shadow-sm'>Connexion par téléphone</h2>
-              <p className='text-sm md:text-base text-blue-50/95 font-medium'>Entrez votre numéro (même que WhatsApp) pour accéder à vos dépenses.</p>
-            </div>
-
-            <form onSubmit={submit} className='space-y-4'>
-            <div>
-              <input
-                type='tel'
-                placeholder='Ex: 06 12 34 56 78 ou +33 6 12 34 56 78'
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className='w-full p-4 border-2 border-white/50 bg-white/95 backdrop-blur-md rounded-xl focus:ring-4 focus:ring-white/30 focus:border-white/70 transition-all duration-300 text-blue-900 placeholder:text-blue-400/70 font-medium shadow-lg'
-              />
-              <p className='text-xs text-blue-50/90 mt-2'>
-                Formats acceptés : 06..., 07..., +33 6..., +33 7... (convertis automatiquement en 336... ou 337...)
-              </p>
-            </div>
-            
-            {message && (
-              <div className={`p-3 rounded-xl text-sm font-semibold backdrop-blur-sm ${
-                message.includes('✅') 
-                  ? 'bg-green-500/25 text-green-50 border border-green-300/50' 
-                  : 'bg-red-500/25 text-red-50 border border-red-300/50'
-              }`}>
-                {message}
-              </div>
-            )}
-
-              <button 
-                disabled={loading || normalizePhone(phone).length < 6} 
-                className='w-full p-4 bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed font-bold text-base shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] disabled:transform-none border-2 border-blue-600/50 ring-2 ring-blue-500/30 relative overflow-hidden group'
-              >
-                {/* Effet de brillance sur le bouton */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                <span className="relative z-10">{loading ? 'Connexion…' : 'Se connecter'}</span>
-              </button>
-            </form>
-          </div>
+      {/* Logo/Icon en haut */}
+      <div className="relative z-10 mb-8">
+        <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl flex items-center justify-center overflow-hidden bg-white/10 backdrop-blur-md p-3 shadow-2xl border-2 border-white/20">
+          <img 
+            src="/smart-expense-logo.png?v=2" 
+            alt="SmartExpense Logo" 
+            className="w-full h-full object-contain"
+            loading="eager"
+            onError={(e) => {
+              console.error('Erreur chargement logo:', e)
+              const target = e.target as HTMLImageElement
+              target.style.display = 'none'
+              if (target.parentElement) {
+                target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 rounded-2xl"><span class="text-white text-4xl md:text-5xl font-black">SE</span></div>'
+              }
+            }}
+          />
         </div>
+      </div>
+
+      {/* Titre WELCOME */}
+      <div className="relative z-10 mb-6">
+        <h1 className='text-5xl md:text-6xl font-bold text-white tracking-wide drop-shadow-2xl text-center'>
+          WELCOME
+        </h1>
+      </div>
+
+      {/* Texte descriptif */}
+      <div className="relative z-10 mb-8 max-w-md px-4">
+        <p className='text-base md:text-lg text-blue-100/80 text-center leading-relaxed'>
+          Entrez votre numéro de téléphone pour accéder à vos dépenses et gérer vos notes de frais en toute simplicité.
+        </p>
+      </div>
+
+      {/* Points de navigation (optionnel, pour style) */}
+      <div className="relative z-10 mb-8 flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-white/40"></div>
+        <div className="w-3 h-3 rounded-full bg-white"></div>
+        <div className="w-2 h-2 rounded-full bg-white/40"></div>
+      </div>
+
+      {/* Formulaire de connexion */}
+      <div className='relative z-10 max-w-md w-full px-4'>
+        <form onSubmit={submit} className='space-y-4'>
+          <div>
+            <input
+              type='tel'
+              placeholder='Ex: 06 12 34 56 78'
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className='w-full p-4 bg-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-white/30 transition-all duration-300 text-blue-900 placeholder:text-blue-400/60 font-medium shadow-xl text-center text-lg'
+            />
+            <p className='text-xs text-blue-200/70 mt-2 text-center'>
+              Formats acceptés : 06..., 07..., +33 6...
+            </p>
+          </div>
+          
+          {message && (
+            <div className={`p-3 rounded-xl text-sm font-semibold text-center ${
+              message.includes('✅') 
+                ? 'bg-green-500/20 text-green-100 border border-green-300/30' 
+                : 'bg-red-500/20 text-red-100 border border-red-300/30'
+            }`}>
+              {message}
+            </div>
+          )}
+
+          {/* Bouton Log In */}
+          <button 
+            disabled={loading || normalizePhone(phone).length < 6} 
+            className='w-full p-4 bg-white text-blue-900 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-[1.02] disabled:transform-none'
+          >
+            {loading ? 'Connexion…' : 'Log In'}
+          </button>
+        </form>
+      </div>
+
+      {/* Watermark/Logo en arrière-plan (optionnel) */}
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 -rotate-90 opacity-10 pointer-events-none">
+        <span className="text-6xl font-black text-white">SmartExpense</span>
       </div>
     </div>
   )
