@@ -458,7 +458,7 @@ export default function WhatsAppPage() {
                       htmlFor="image-upload"
                       className="flex-1 cursor-pointer"
                     >
-                      <div className="p-6 border-2 border-dashed border-slate-600/60 rounded-2xl hover:border-amber-400 hover:bg-slate-700/40 transition-all duration-300 text-center shadow-sm group backdrop-blur-sm bg-slate-700/30">
+                      <div className="p-4 md:p-6 border-2 border-dashed border-slate-600/60 rounded-xl md:rounded-2xl hover:border-blue-400 hover:bg-slate-700/40 transition-all duration-300 text-center shadow-sm group backdrop-blur-sm bg-slate-700/30">
                         {selectedImage ? (
                           <div className="space-y-3">
                             <img
@@ -470,8 +470,8 @@ export default function WhatsAppPage() {
                           </div>
                         ) : (
                           <div className="flex flex-col items-center gap-3 py-6">
-                            <div className="w-16 h-16 rounded-2xl backdrop-blur-sm bg-gradient-to-br from-blue-500/40 to-blue-600/40 flex items-center justify-center group-hover:from-blue-500/50 group-hover:to-blue-600/50 transition-all border border-blue-400/30 ring-1 ring-blue-300/20">
-                              <PhotoIcon className="w-8 h-8 text-blue-300" />
+                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl backdrop-blur-sm bg-gradient-to-br from-blue-500/40 to-blue-600/40 flex items-center justify-center group-hover:from-blue-500/50 group-hover:to-blue-600/50 transition-all border border-blue-400/30 ring-1 ring-blue-300/20">
+                              <PhotoIcon className="w-6 h-6 md:w-8 md:h-8 text-blue-300" />
                             </div>
                             <p className="text-sm text-slate-300 font-medium">Cliquez pour sélectionner une image</p>
                             <p className="text-xs text-slate-400">JPG, PNG, WEBP (max 10MB)</p>
@@ -505,7 +505,7 @@ export default function WhatsAppPage() {
                     value={imageCaption}
                     onChange={(e) => setImageCaption(e.target.value)}
                     placeholder="Ex: Ticket restaurant du 15/01"
-                    className="w-full p-4 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-2xl focus:ring-4 focus:ring-amber-400/30 focus:border-amber-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium"
+                    className="w-full p-3 md:p-4 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-xl md:rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium text-sm md:text-base"
                     onKeyPress={(e) => e.key === 'Enter' && !sending && selectedImage && simulateWhatsAppMessage()}
                     disabled={sending}
                   />
