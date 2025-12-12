@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { DevicePhoneMobileIcon, EyeIcon, ArrowPathIcon, XMarkIcon } from "@heroicons/react/24/outline"
+import { DevicePhoneMobileIcon, EyeIcon, ArrowPathIcon, XMarkIcon, PencilIcon } from "@heroicons/react/24/outline"
 import dynamic from 'next/dynamic'
 
 const EditExpenseModal = dynamic(() => import('./EditExpenseModal'), { ssr: false })
@@ -311,8 +311,7 @@ export default function WhatsappExpensesPanel() {
             {expenses.map((expense) => (
               <div 
                 key={expense.id} 
-                className="p-6 cursor-pointer hover:bg-zinc-50 transition-colors"
-                onClick={() => setEditingExpense(expense)}
+                className="p-6 transition-colors"
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex-1">
@@ -330,22 +329,38 @@ export default function WhatsappExpensesPanel() {
                     <p className="text-zinc-700 font-medium">{expense.merchant}</p>
                     <p className="text-sm text-zinc-500">{expense.description}</p>
                   </div>
-                  {(expense.image_data || expense.image_url) && (
-                    <div className="flex-shrink-0 mr-4">
-                      <img
-                        src={expense.image_data || expense.image_url}
-                        alt="Ticket de dépense"
-                        className="w-16 h-16 object-cover rounded-lg border border-zinc-200 cursor-pointer hover:opacity-80 transition"
-                        title="Cliquez pour agrandir l'image"
-                        onClick={() => {
-                          const imgSrc = expense.image_data || expense.image_url
-                          if (!imgSrc) return
-                          setViewerSrc(imgSrc)
-                        }}
-                      />
-                    </div>
-                  )}
-                  <div className="text-right text-sm text-zinc-500 flex-shrink-0">
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {(expense.image_data || expense.image_url) && (
+                      <div className="flex-shrink-0">
+                        <img
+                          src={expense.image_data || expense.image_url}
+                          alt="Ticket de dépense"
+                          className="w-16 h-16 object-cover rounded-lg border border-zinc-200 cursor-pointer hover:opacity-80 transition"
+                          title="Cliquez pour agrandir l'image"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            const imgSrc = expense.image_data || expense.image_url
+                            if (!imgSrc) return
+                            setViewerSrc(imgSrc)
+                          }}
+                        />
+                      </div>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditingExpense(expense)
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg border-2 border-blue-600/50 ring-2 ring-blue-500/30 relative overflow-hidden group"
+                      title="Éditer cette dépense"
+                    >
+                      {/* Effet de brillance sur le bouton */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                      <PencilIcon className="w-4 h-4 relative z-10" />
+                      <span className="relative z-10">Éditer</span>
+                    </button>
+                  </div>
+                  <div className="text-right text-sm text-zinc-500 flex-shrink-0 ml-4">
                     <p>Confiance: {Math.round((expense.confidence || 0) * 100)}%</p>
                     <p>
                       Reçu: {expense.received_at
