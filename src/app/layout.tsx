@@ -1,13 +1,12 @@
 import type { Metadata } from 'next'
 // TEMPORAIRE - Clerk désactivé
-// import { ClerkProvider } from '@clerk/nextjs'
+// // import { ClerkProvider } from '@clerk/nextjs'
 import { SpeedInsights } from '@vercel/speed-insights/next'
-import NavigationMenu from '@/components/NavigationMenu'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Smart Expense',
-  description: "Application de gestion des notes de frais Smart Expense",
+  title: 'SmartExpense - Gestion Intelligente des Dépenses',
+  description: "SmartExpense - Gestion des dépenses avec IA Gemini pour extraction automatique des tickets",
   manifest: '/manifest.json',
 }
 
@@ -33,17 +32,16 @@ export default function RootLayout({
         <meta name="theme-color" content="#18181B" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Smart Expense" />
+        <meta name="apple-mobile-web-app-title" content="SmartExpense" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <link rel="icon" href="/smart-expense-logo.jpg" />
-        <link rel="apple-touch-icon" href="/smart-expense-logo.jpg" />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/SGDF_symbole_RVB.png" />
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-sans">
         <div className="min-h-screen">
           {children}
         </div>
-        <NavigationMenu />
         <SpeedInsights />
         <script dangerouslySetInnerHTML={{__html:`if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW registration failed',e));});}`}} />
       </body>

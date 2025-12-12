@@ -1,8 +1,8 @@
 {
-  "name": "billz",
-  "version": "0.2.0",
+  "name": "smart-expense",
+  "version": "1.0.0",
   "private": true,
-  "description": "Application de gestion des notes de frais Billz",
+  "description": "SmartExpense - Gestion intelligente des dépenses avec IA Gemini",
   "license": "Apache-2.0",
   "homepage": "https://treso.romain-rochas.fr",
   "author": {
@@ -17,15 +17,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",
-    "whatsapp-bot": "node whatsapp-bot-service.js"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.0",
     "@heroicons/react": "^2.1.5",
+    "@supabase/supabase-js": "^2.87.1",
     "@vercel/speed-insights": "^1.2.0",
-    "axios": "^1.13.2",
     "next": "16.0.7",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.6",
     "react": "19.2.1",
     "react-dom": "19.2.1",

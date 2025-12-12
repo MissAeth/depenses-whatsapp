@@ -1,10 +1,10 @@
 {
-	"name": "Smart Expense",
-	"short_name": "Smart Expense",
-	"description": "Application de gestion des notes de frais Smart Expense",
+	"name": "SmartExpense - Gestion Intelligente des Dépenses",
+	"short_name": "SmartExpense",
+	"description": "SmartExpense - Gestion des dépenses avec IA Gemini pour extraction automatique des tickets",
 	"lang": "fr-FR",
-	"id": "/whatsapp",
-	"start_url": "/whatsapp?source=pwa",
+	"id": "/",
+	"start_url": "/?source=pwa",
 	"scope": "/",
 	"display": "standalone",
 	"display_override": ["standalone", "window-controls-overlay"],
@@ -16,28 +16,34 @@
 	"prefer_related_applications": false,
 	"icons": [
 		{
-			"src": "/smart-expense-logo.jpg",
+			"src": "/SGDF_symbole_RVB.png",
 			"sizes": "512x512",
-			"type": "image/jpeg"
+			"type": "image/png"
 		},
 		{
-			"src": "/smart-expense-logo.jpg",
+			"src": "/SGDF_symbole_blanc.png",
 			"sizes": "512x512",
-			"type": "image/jpeg",
+			"type": "image/png",
 			"purpose": "maskable any"
 		},
 		{
-			"src": "/smart-expense-logo.jpg",
-			"sizes": "192x192",
-			"type": "image/jpeg"
+			"src": "/favicon.ico",
+			"sizes": "48x48 32x32 16x16",
+			"type": "image/x-icon"
 		}
 	],
 	"shortcuts": [
 		{
-			"name": "Nouvelle facture",
+			"name": "Nouvelle dépense",
 			"short_name": "Nouvelle",
-			"description": "Créer une nouvelle facture carte",
-			"url": "/whatsapp?action=new"
+			"description": "Créer une nouvelle dépense avec IA",
+			"url": "/?action=new"
+		},
+		{
+			"name": "WhatsApp",
+			"short_name": "WhatsApp",
+			"description": "Messages WhatsApp reçus",
+			"url": "/whatsapp"
 		}
 	]
 }

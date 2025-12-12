@@ -1,0 +1,149 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                   📱 RÉORGANISATION DE L'INTERFACE                           ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Date : $(date)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ MODIFICATION APPLIQUÉE
+
+Fichier modifié : src/app/page.tsx
+
+Simplification de l'interface de 3 onglets à 2 onglets seulement.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔄 AVANT / APRÈS
+
+AVANT (3 onglets) :
+┌────────────────────────────────────────────┐
+│ [Accueil] [Dépenses] [Analytics]           │
+├────────────────────────────────────────────┤
+│ Onglet Accueil :                           │
+│ • PhotoCapture (capture photo)             │
+│ • ExpenseForm (formulaire création)        │
+│                                            │
+│ Onglet Dépenses :                          │
+│ • ExpensesEmbed (liste des dépenses)       │
+│                                            │
+│ Onglet Analytics :                         │
+│ • AnalyticsEmbed (statistiques)            │
+└────────────────────────────────────────────┘
+
+APRÈS (2 onglets) :
+┌────────────────────────────────────────────┐
+│ [Dépenses] [Analytics]                     │
+├────────────────────────────────────────────┤
+│ Onglet Dépenses :                          │
+│ • PhotoCapture (capture photo)             │
+│ • ExpenseForm (formulaire création)        │
+│ ───────────────────────────────            │
+│ • ExpensesEmbed (liste des dépenses)       │
+│                                            │
+│ Onglet Analytics :                         │
+│ • AnalyticsEmbed (statistiques)            │
+└────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 AVANTAGES
+
+1. Interface plus simple
+   • 2 onglets au lieu de 3
+   • Moins de navigation nécessaire
+   • Plus intuitif pour les utilisateurs
+
+2. Workflow unifié
+   • Toutes les actions de dépenses dans un seul onglet
+   • De la création à la consultation
+   • Flux logique : créer → voir la liste
+
+3. Meilleure organisation visuelle
+   • Séparateur visuel entre création et liste
+   • Section claire pour chaque action
+   • Cohérence de l'expérience utilisateur
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 CHANGEMENTS TECHNIQUES
+
+1. Type Tab modifié
+   - Avant : type Tab = 'home' | 'expenses' | 'analytics'
+   - Après : type Tab = 'expenses' | 'analytics'
+
+2. Onglet par défaut
+   - Avant : activeTab = 'home'
+   - Après : activeTab = 'expenses'
+
+3. Structure de l'onglet Dépenses
+   ```tsx
+   {activeTab === 'expenses' && (
+     <div className="space-y-6">
+       {/* Formulaire de capture et création */}
+       {!capturedImage ? (
+         <PhotoCapture onImageCapture={handleImageCapture} />
+       ) : (
+         <ExpenseForm ... />
+       )}
+       
+       {/* Séparateur visuel */}
+       <div className="border-t border-zinc-200 my-6"></div>
+       
+       {/* Liste des dépenses */}
+       <ExpensesEmbed />
+     </div>
+   )}
+   ```
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTS EFFECTUÉS
+
+✅ Build de production : Succès
+✅ TypeScript : Pas d'erreur
+✅ 33 pages générées
+✅ Déploiement Vercel : Succès
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 IMPACT UTILISATEUR
+
+Flux utilisateur simplifié :
+
+1. Login
+2. Arrive sur l'onglet "Dépenses" (par défaut)
+3. Voit immédiatement :
+   • En haut : Bouton pour créer une nouvelle dépense
+   • En bas : Liste de toutes ses dépenses existantes
+4. Peut basculer sur "Analytics" pour voir les statistiques
+
+Aucun changement sur l'onglet Analytics.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎨 AMÉLIORATIONS UX
+
+✅ Navigation réduite (1 clic en moins)
+✅ Contexte conservé (tout dans "Dépenses")
+✅ Séparateur visuel clair
+✅ Espace de 6 unités entre sections (space-y-6)
+✅ Bordure grise entre formulaire et liste
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 SUGGESTIONS FUTURES
+
+1. Ajouter un bouton "Nouvelle dépense" dans la liste
+   → Scroll automatique vers le haut
+
+2. Afficher un indicateur si une image est en cours de traitement
+
+3. Compter le nombre de dépenses et l'afficher dans l'onglet
+   → "Dépenses (12)" au lieu de "Dépenses"
+
+4. Ajouter des filtres rapides au-dessus de la liste
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cette réorganisation améliore significativement l'expérience utilisateur ! ✨

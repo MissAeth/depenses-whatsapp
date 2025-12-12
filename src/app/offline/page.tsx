@@ -1,4 +1,4 @@
-export const metadata = { title: 'Hors ligne - Billz' }
+export const metadata = { title: 'Hors ligne - Factures carte procurement SGDF' }
 
 export default function OfflinePage() {
   return (

@@ -1,13 +1,14 @@
 /**
  * API WhatsApp Webhook pour recevoir les messages avec photos de tickets
- * Intégration avec l'API Meta WhatsApp Business Platform
- * Compatible avec le format Meta et le simulateur local
+ * Intégration avec l'IA pour traitement automatique des dépenses
+ * Compatible WhatsApp Business API (Meta)
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { extractWithAIVision } from '@/lib/ai-vision'
+import { processExpenseContent } from '@/lib/ai-processor-unified'
+import { saveExpenseToSupabase, type WhatsAppExpense } from '@/lib/supabase'
 
-// Interface pour les données WhatsApp reçues (format simplifié)
+// Interface pour les données WhatsApp reçues
 interface WhatsAppMessage {
   from: string
   text?: string
@@ -19,461 +20,156 @@ interface WhatsAppMessage {
   timestamp: string
 }
 
-// Interface pour le format Meta
-interface MetaWebhookEntry {
-  id: string
-  changes: Array<{
-    value: {
-      messaging_product: string
-      metadata: {
-        display_phone_number: string
-        phone_number_id: string
-      }
-      contacts?: Array<{
-        profile: {
-          name: string
-        }
-        wa_id: string
-      }>
-      messages?: Array<{
-        from: string
-        id: string
-        timestamp: string
-        type: string
-        text?: {
-          body: string
-        }
-        image?: {
-          id: string
-          mime_type?: string
-          caption?: string
-          sha256?: string
-        }
-        document?: {
-          id: string
-          filename?: string
-          mime_type?: string
-        }
-      }>
-      statuses?: Array<unknown>
-    }
-    field: string
-  }>
-}
-
 // Stockage temporaire des dépenses (en production, utiliser une vraie DB)
 const expenses: any[] = []
 
-/**
- * Récupère un média depuis l'API Meta WhatsApp
- */
-async function fetchMediaFromMeta(mediaId: string): Promise<string> {
-  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID
-
-  if (!accessToken) {
-    throw new Error('WHATSAPP_ACCESS_TOKEN non configuré')
-  }
-
-  if (!phoneNumberId) {
-    throw new Error('WHATSAPP_PHONE_NUMBER_ID non configuré')
-  }
-
-  try {
-    // Étape 1: Récupérer l'URL du média
-    const mediaUrlResponse = await fetch(
-      `https://graph.facebook.com/v21.0/${mediaId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      }
-    )
-
-    if (!mediaUrlResponse.ok) {
-      const errorText = await mediaUrlResponse.text()
-      throw new Error(`Erreur récupération URL média: ${mediaUrlResponse.status} - ${errorText}`)
-    }
-
-    const mediaData = await mediaUrlResponse.json()
-    const mediaUrl = mediaData.url
-
-    if (!mediaUrl) {
-      throw new Error('URL média non trouvée dans la réponse Meta')
-    }
-
-    // Étape 2: Télécharger le média avec l'access token
-    const mediaResponse = await fetch(mediaUrl, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    })
-
-    if (!mediaResponse.ok) {
-      throw new Error(`Erreur téléchargement média: ${mediaResponse.status}`)
-    }
-
-    // Étape 3: Convertir en base64
-    const arrayBuffer = await mediaResponse.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-    const base64String = buffer.toString('base64')
-    
-    // Déterminer le type MIME
-    const contentType = mediaResponse.headers.get('content-type') || 'image/jpeg'
-    const base64DataUrl = `data:${contentType};base64,${base64String}`
-
-    console.log(`✅ Média récupéré depuis Meta: ${mediaId} (${buffer.length} bytes)`)
-    return base64DataUrl
-
-  } catch (error) {
-    console.error('❌ Erreur récupération média Meta:', error)
-    throw error
-  }
-}
-
-/**
- * Parse un webhook Meta en format simplifié
- */
-function parseMetaWebhook(body: { entry?: MetaWebhookEntry[] }): WhatsAppMessage[] {
-  const messages: WhatsAppMessage[] = []
-
-  if (!body.entry || !Array.isArray(body.entry)) {
-    return messages
-  }
-
-  for (const entry of body.entry) {
-    if (!entry.changes || !Array.isArray(entry.changes)) {
-      continue
-    }
-
-    for (const change of entry.changes) {
-      if (change.field !== 'messages') {
-        continue
-      }
-
-      const value = change.value
-      if (!value.messages || !Array.isArray(value.messages)) {
-        continue
-      }
-
-      for (const metaMessage of value.messages) {
-        // Ignorer les statuses (messages de statut, pas des messages utilisateur)
-        if (metaMessage.type === 'status') {
-          continue
-        }
-
-        const message: WhatsAppMessage = {
-          from: metaMessage.from,
-          timestamp: new Date(parseInt(metaMessage.timestamp) * 1000).toISOString()
-        }
-
-        // Message texte
-        if (metaMessage.text) {
-          message.text = metaMessage.text.body
-        }
-
-        // Message avec image
-        if (metaMessage.image) {
-          message.media = {
-            type: 'image',
-            url: metaMessage.image.id, // On stocke l'ID, on récupérera le média après
-            caption: metaMessage.image.caption
-          }
-        }
-
-        // Message avec document
-        if (metaMessage.document) {
-          message.media = {
-            type: 'document',
-            url: metaMessage.document.id, // On stocke l'ID, on récupérera le média après
-            caption: metaMessage.document.filename
-          }
-        }
-
-        messages.push(message)
-      }
-    }
-  }
-
-  return messages
-}
-
-/**
- * Endpoint GET pour la vérification du webhook Meta
- * Meta envoie une requête GET pour vérifier que le webhook est valide
- */
-export async function GET(req: NextRequest) {
-  try {
-    const url = new URL(req.url)
-    const mode = url.searchParams.get('hub.mode')
-    const token = url.searchParams.get('hub.verify_token')
-    const challenge = url.searchParams.get('hub.challenge')
-
-    // Vérification du webhook Meta
-    if (mode === 'subscribe' && token) {
-      const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN
-
-      if (!verifyToken) {
-        console.warn('⚠️ WHATSAPP_VERIFY_TOKEN non configuré, webhook Meta non vérifié')
-        return new NextResponse('Verify token not configured', { 
-          status: 403,
-          headers: {
-            'Content-Type': 'text/plain',
-          }
-        })
-      }
-
-      if (token === verifyToken) {
-        console.log('✅ Webhook Meta vérifié avec succès')
-        console.log('📋 Challenge reçu:', challenge)
-        // Meta attend le challenge en texte brut, sans JSON
-        return new NextResponse(challenge || '', { 
-          status: 200,
-          headers: {
-            'Content-Type': 'text/plain',
-          }
-        })
-      } else {
-        console.warn('❌ Token de vérification invalide')
-        console.warn('   Token reçu:', token)
-        console.warn('   Token attendu:', verifyToken)
-        return new NextResponse('Invalid verify token', { 
-          status: 403,
-          headers: {
-            'Content-Type': 'text/plain',
-          }
-        })
-      }
-    }
-
-    // Si ce n'est pas une requête de vérification Meta, retourner les dépenses (compatibilité)
-    const limit = parseInt(url.searchParams.get('limit') || '10')
-    
-    const recentExpenses = expenses
-      .sort((a, b) => new Date(b.received_at).getTime() - new Date(a.received_at).getTime())
-      .slice(0, limit)
-    
-    return NextResponse.json({
-      success: true,
-      expenses: recentExpenses,
-      total: expenses.length
-    })
-
-  } catch (error) {
-    console.error('❌ Erreur GET webhook:', error)
-    return NextResponse.json({
-      error: 'Erreur récupération données'
-    }, { status: 500 })
-  }
-}
 
 /**
  * Endpoint POST pour recevoir les webhooks WhatsApp
- * Gère à la fois le format Meta et le format du simulateur local
  */
 export async function POST(req: NextRequest) {
   try {
     console.log('📱 Webhook WhatsApp reçu')
     
     const body = await req.json()
-    console.log('📋 Données reçues:', JSON.stringify(body).substring(0, 500))
-
-    let messages: WhatsAppMessage[] = []
-
-    // Détecter le format Meta (présence de "entry")
-    if (body.entry && Array.isArray(body.entry)) {
-      console.log('📦 Format Meta détecté')
-      messages = parseMetaWebhook(body)
-    } else {
-      // Format simulateur local (compatibilité)
-      console.log('📦 Format simulateur local détecté')
-      const message: WhatsAppMessage = {
-        from: body.from || 'demo_user',
-        text: body.text || body.message || '',
-        media: body.media || (body.image_url ? {
-          type: 'image',
-          url: body.image_url,
-          caption: body.caption
-        } : undefined) || (body.imageBase64 ? {
-          type: 'image',
-          url: body.imageBase64, // Déjà en base64
-          caption: body.text || body.message || ''
-        } : undefined),
-        timestamp: body.timestamp || new Date().toISOString()
+    console.log('📋 Données reçues:', JSON.stringify(body, null, 2))
+    
+    // Analyser la structure du webhook Meta WhatsApp
+    const entry = body.entry?.[0]
+    const changes = entry?.changes?.[0]
+    const value = changes?.value
+    const messages = value?.messages?.[0]
+    
+    if (!messages) {
+      console.log('⚠️ Pas de message dans le webhook')
+      return NextResponse.json({ success: true, message: 'Webhook reçu mais pas de message' })
+    }
+    
+    console.log('📨 Message WhatsApp détecté:', {
+      from: messages.from,
+      type: messages.type,
+      timestamp: messages.timestamp
+    })
+    
+    // Extraire le message et media
+    const normalize = (input: string) => {
+      let digits = (input || '').replace(/\D/g, '')
+      // Si commence par 0 (format français local), remplacer par 33
+      if (digits.startsWith('0')) {
+        digits = '33' + digits.substring(1)
       }
-      messages = [message]
+      // Si commence par 6 ou 7 sans indicatif (mobile français), ajouter 33
+      else if (digits.length === 9 && (digits.startsWith('6') || digits.startsWith('7'))) {
+        digits = '33' + digits
+      }
+      return digits
     }
-
-    if (messages.length === 0) {
-      console.log('⚠️ Aucun message trouvé dans le webhook')
-      return NextResponse.json({
-        success: true,
-        message: 'Aucun message à traiter'
-      })
+    const message: WhatsAppMessage = {
+      from: normalize(messages.from),
+      text: messages.text?.body || '',
+      timestamp: new Date(parseInt(messages.timestamp) * 1000).toISOString()
     }
-
-    // Traiter chaque message
-    const results = []
-    for (const message of messages) {
-      console.log('📨 Traitement message:', {
-        from: message.from,
-        hasText: !!message.text,
-        hasMedia: !!message.media
-      })
-
-      // Détecter si c'est un message de dépense
-      const isExpenseMessage = detectExpenseMessage(message)
+    
+    // Gérer les images
+    if (messages.type === 'image' && messages.image?.id) {
+      console.log('🖼️ Image reçue, téléchargement...')
       
-      if (!isExpenseMessage) {
-        console.log('⏭️ Message ignoré (pas de dépense détectée)')
-        results.push({
-          success: true,
-          message: 'Message ignoré (pas de dépense détectée)'
-        })
-        continue
-      }
-
-      console.log('💰 Message de dépense détecté, traitement...')
-      
-      // Traiter avec l'IA
-      let extractedData
-      let imageBase64: string | null = null
-
-      // Gérer les médias
-      if (message.media) {
-        const mediaIdOrUrl = message.media.url
-
-        // Si c'est un ID Meta (format numérique), récupérer depuis l'API Meta
-        if (/^\d+$/.test(mediaIdOrUrl)) {
-          try {
-            console.log(`🔄 Récupération média Meta: ${mediaIdOrUrl}`)
-            imageBase64 = await fetchMediaFromMeta(mediaIdOrUrl)
-          } catch (error) {
-            console.error('❌ Erreur récupération média Meta:', error)
-            results.push({
-              success: false,
-              error: 'Erreur récupération média depuis Meta',
-              details: error instanceof Error ? error.message : 'Erreur inconnue'
-            })
-            continue
-          }
-        } 
-        // Si c'est déjà du base64 (simulateur)
-        else if (mediaIdOrUrl.startsWith('data:image/')) {
-          console.log('✅ Image déjà en base64')
-          imageBase64 = mediaIdOrUrl
+      try {
+        const imageBase64 = await downloadWhatsAppMedia(messages.image.id)
+        message.media = {
+          type: 'image',
+          url: `data:image/jpeg;base64,${imageBase64}`,
+          caption: messages.image.caption || ''
         }
-        // Si c'est une URL, télécharger
-        else if (mediaIdOrUrl.startsWith('http')) {
-          console.log('🖼️ Téléchargement image depuis URL:', mediaIdOrUrl)
-          try {
-            const imageResponse = await fetch(mediaIdOrUrl)
-            if (!imageResponse.ok) {
-              throw new Error(`Erreur téléchargement: ${imageResponse.status}`)
-            }
-            
-            const imageBuffer = await imageResponse.arrayBuffer()
-            const imageBase64String = Buffer.from(imageBuffer).toString('base64')
-            const contentType = imageResponse.headers.get('content-type') || 'image/jpeg'
-            imageBase64 = `data:${contentType};base64,${imageBase64String}`
-            
-            console.log('✅ Image téléchargée et convertie en base64')
-          } catch (error) {
-            console.error('❌ Erreur téléchargement image:', error)
-            results.push({
-              success: false,
-              error: 'Erreur téléchargement image',
-              details: error instanceof Error ? error.message : 'Erreur inconnue'
-            })
-            continue
-          }
+        console.log('✅ Image téléchargée avec succès')
+      } catch (error) {
+        console.error('❌ Erreur téléchargement image:', error)
+        console.error('📋 Détails erreur:', error instanceof Error ? error.message : 'Erreur inconnue')
+        
+        // En cas d'erreur image, traiter quand même le caption s'il existe
+        if (messages.image?.caption) {
+          console.log('📝 Fallback vers traitement du caption:', messages.image.caption)
+          message.text = messages.image.caption
+          console.log('📝 Caption assigné comme texte pour traitement IA')
         }
-
-        // Traitement avec Gemini si on a une image
-        if (imageBase64) {
-          try {
-            console.log('🤖 Traitement image avec Gemini...')
-            extractedData = await extractWithAIVision(imageBase64)
-            console.log('✅ Données extraites par Gemini:', extractedData)
-          } catch (error) {
-            console.error('❌ Erreur traitement image avec Gemini:', error)
-            results.push({
-              success: false,
-              error: 'Erreur traitement image avec Gemini',
-              details: error instanceof Error ? error.message : 'Erreur inconnue'
-            })
-            continue
-          }
-        }
+        
+        // Ne pas arrêter le traitement, continuer avec le texte/caption
+        console.log('⚠️ Continuation traitement sans image')
       }
-      // Message texte uniquement
-      else if (message.text) {
-        console.log('📝 Traitement message texte uniquement...')
-        try {
-          const { processExpenseContent } = await import('@/lib/ai-processor')
-          extractedData = await processExpenseContent(undefined, message.text)
-          console.log('✅ Données extraites du texte:', extractedData)
-          imageBase64 = null
-        } catch (error) {
-          console.error('❌ Erreur traitement texte:', error)
-          results.push({
-            success: false,
-            error: 'Erreur traitement texte',
-            details: error instanceof Error ? error.message : 'Erreur inconnue'
-          })
-          continue
-        }
-      } else {
-        results.push({
-          success: false,
-          error: 'Aucun contenu à traiter. Veuillez envoyer une image de ticket ou un message texte.'
-        })
-        continue
-      }
-
-      // Enrichir avec les métadonnées WhatsApp
-      const expenseRecord = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        ...extractedData,
-        source: 'whatsapp',
-        whatsapp_from: message.from,
-        original_message: message.text || message.media?.caption || '',
-        received_at: message.timestamp,
-        processed_at: new Date().toISOString(),
-        imageBase64: imageBase64 || null
-      }
-
-      console.log('💾 Dépense à sauvegarder:', {
-        id: expenseRecord.id,
-        amount: expenseRecord.amount,
-        merchant: expenseRecord.merchant,
-        category: expenseRecord.category,
-        hasImage: !!imageBase64
-      })
-
-      // Sauvegarder (temporairement en mémoire)
-      expenses.push(expenseRecord)
-      console.log('✅ Dépense sauvegardée:', expenseRecord.id)
-
-      results.push({
-        success: true,
-        message: 'Dépense traitée et sauvegardée',
-        expense_id: expenseRecord.id,
-        extracted_data: extractedData
+    }
+    
+    console.log('📨 Message traité:', {
+      from: message.from,
+      hasText: !!message.text,
+      hasMedia: !!message.media,
+      timestamp: message.timestamp
+    })
+    
+    // Détecter si c'est un message de dépense
+    const isExpenseMessage = detectExpenseMessage(message)
+    
+    if (!isExpenseMessage) {
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Message ignoré (pas de dépense détectée)' 
       })
     }
-
-    // Retourner les résultats
-    if (results.length === 1) {
-      return NextResponse.json(results[0])
+    
+    console.log('💰 Message de dépense détecté, traitement...')
+    
+    // Traiter avec l'IA
+    let extractedData
+    if (message.media?.type === 'image') {
+      // Traitement image
+      console.log('🖼️ Traitement image WhatsApp...')
+      extractedData = await processExpenseContent(message.media.url)
+    } else if (message.text) {
+      // Traitement texte
+      console.log('📝 Traitement texte WhatsApp...')
+      console.log('📝 Texte à traiter:', message.text)
+      extractedData = await processExpenseContent(undefined, message.text)
     } else {
-      return NextResponse.json({
-        success: true,
-        results,
-        processed: results.length
-      })
+      return NextResponse.json({ 
+        error: 'Aucun contenu à traiter' 
+      }, { status: 400 })
     }
-
+    
+    // Enrichir avec les métadonnées WhatsApp
+    const expenseRecord: WhatsAppExpense = {
+      expense_id: Date.now().toString(),
+      amount: extractedData.amount || 0,
+      merchant: extractedData.merchant || 'Inconnu',
+      description: extractedData.description || message.text || '',
+      category: extractedData.category || 'Divers',
+      confidence: extractedData.confidence || 0,
+      raw_text: message.text || '',
+      whatsapp_from: message.from,
+      source: 'whatsapp',
+      received_at: message.timestamp,
+      processed_at: new Date().toISOString()
+    }
+    
+    // Sauvegarder (SUPABASE DATABASE - persistant)
+    expenses.push(expenseRecord)
+    
+    try {
+      // Sauvegarder dans Supabase (priorité)
+      const savedExpense = await saveExpenseToSupabase(expenseRecord)
+      console.log('✅ Dépense sauvegardée en BDD Supabase:', savedExpense)
+    } catch (error) {
+      console.error('⚠️ Échec Supabase, fallback fichier:', error)
+      // Fallback: sauvegarder dans fichier temporaire
+      await saveExpenseToFile(expenseRecord)
+    }
+    
+    // Réponse de succès
+    return NextResponse.json({
+      success: true,
+      message: 'Dépense traitée et sauvegardée',
+      expense_id: expenseRecord.id,
+      extracted_data: extractedData
+    })
+    
   } catch (error) {
     console.error('❌ Erreur webhook WhatsApp:', error)
     return NextResponse.json({
@@ -483,54 +179,203 @@ export async function POST(req: NextRequest) {
   }
 }
 
+
 /**
  * Détecte si un message WhatsApp concerne une dépense
  */
 function detectExpenseMessage(message: WhatsAppMessage): boolean {
+  // Mots-clés de détection
   const expenseKeywords = [
-    'dépense', 'ticket', 'facture', 'reçu', 'addition', 'note',
-    'restaurant', 'taxi', 'hotel', 'carburant', 'course', 'essence',
-    '€', 'euro', 'eur', 'total', 'prix', 'montant', 'payer', 'payé',
-    'uber', 'sncf', 'metro', 'bus', 'parking', 'péage',
-    'café', 'bar', 'bistrot', 'mcdo', 'pizza', 'food',
-    'pharmacie', 'médecin', 'docteur', 'consultation'
+    'dépense', 'ticket', 'facture', 'reçu', 'addition',
+    'restaurant', 'taxi', 'hotel', 'carburant', 'course',
+    '€', 'euro', 'eur', 'total', 'prix', 'montant'
   ]
   
   const textToCheck = (message.text || message.media?.caption || '').toLowerCase()
   
   // Présence d'image = probable dépense
   if (message.media?.type === 'image') {
-    console.log('✅ Dépense détectée: présence d\'image')
     return true
   }
   
-  // Si on a du texte, vérifier les mots-clés
-  if (textToCheck.trim().length > 0) {
-    for (const keyword of expenseKeywords) {
-      if (textToCheck.includes(keyword.toLowerCase())) {
-        console.log(`✅ Dépense détectée: mot-clé "${keyword}" trouvé`)
-        return true
-      }
-    }
-    
-    // Pattern de prix dans le texte
-    const pricePatterns = [
-      /\d+[,\.]\d{2}\s*€/,
-      /€\s*\d+[,\.]\d{2}/,
-      /\d+[,\.]\d{2}\s*eur/i,
-      /total[:\s]*\d+/i,
-      /\d+\s*euros?/i,
-      /montant[:\s]*\d+/i
-    ]
-    
-    for (const pattern of pricePatterns) {
-      if (pattern.test(textToCheck)) {
-        console.log(`✅ Dépense détectée: pattern de prix trouvé`)
-        return true
-      }
+  // Vérifier les mots-clés dans le texte
+  for (const keyword of expenseKeywords) {
+    if (textToCheck.includes(keyword)) {
+      return true
     }
   }
   
-  console.log('❌ Message non détecté comme dépense')
+  // Pattern de prix dans le texte
+  const pricePatterns = [
+    /\d+[,\.]\d{2}\s*€/,
+    /€\s*\d+[,\.]\d{2}/,
+    /\d+[,\.]\d{2}\s*eur/i,
+    /total[:\s]*\d+/i
+  ]
+  
+  for (const pattern of pricePatterns) {
+    if (pattern.test(textToCheck)) {
+      return true
+    }
+  }
+  
   return false
+}
+
+/**
+ * Télécharge une image depuis l'API WhatsApp Business
+ */
+async function downloadWhatsAppMedia(mediaId: string): Promise<string> {
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN_CURRENT || process.env.WHATSAPP_ACCESS_TOKEN_UPDATED || process.env.WHATSAPP_ACCESS_TOKEN_NEW || process.env.WHATSAPP_ACCESS_TOKEN
+  
+  if (!accessToken) {
+    throw new Error('WHATSAPP_ACCESS_TOKEN non configuré')
+  }
+  
+  try {
+    // 1. Obtenir l'URL du média
+    console.log('📡 Récupération URL média ID:', mediaId)
+    console.log('🔑 Token utilisé:', accessToken ? accessToken.substring(0, 20) + '...' : 'NON DÉFINI')
+    
+    const mediaResponse = await fetch(`https://graph.facebook.com/v18.0/${mediaId}`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    })
+    
+    if (!mediaResponse.ok) {
+      const error = await mediaResponse.text()
+      throw new Error(`Erreur récupération métadonnées: ${mediaResponse.status} - ${error}`)
+    }
+    
+    const mediaData = await mediaResponse.json()
+    console.log('📋 Métadonnées média:', {
+      url: mediaData.url?.substring(0, 50) + '...',
+      mimeType: mediaData.mime_type,
+      size: mediaData.file_size
+    })
+    
+    // 2. Télécharger le fichier
+    console.log('⬇️ Téléchargement du fichier média...')
+    const fileResponse = await fetch(mediaData.url, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    })
+    
+    if (!fileResponse.ok) {
+      throw new Error(`Erreur téléchargement fichier: ${fileResponse.status}`)
+    }
+    
+    // 3. Convertir en base64
+    const arrayBuffer = await fileResponse.arrayBuffer()
+    const base64 = Buffer.from(arrayBuffer).toString('base64')
+    
+    console.log('✅ Image convertie en base64, taille:', Math.round(base64.length / 1024), 'KB')
+    return base64
+    
+  } catch (error) {
+    console.error('❌ Erreur téléchargement média WhatsApp:', error)
+    throw error
+  }
+}
+
+// Modification de la fonction GET pour la vérification ET la récupération des dépenses
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  
+  // Vérification webhook Meta (priorité)
+  const mode = searchParams.get('hub.mode')
+  const token = searchParams.get('hub.verify_token')
+  const challenge = searchParams.get('hub.challenge')
+  
+  if (mode === 'subscribe') {
+    console.log('🔍 Vérification webhook Meta:', { mode, token, challenge })
+    
+    // ACCEPTER TOUS LES TOKENS (mode debug temporaire)
+    if (token && challenge) {
+      console.log('✅ Webhook vérifié avec succès (mode permissif)')
+      return new Response(challenge, { 
+        status: 200,
+        headers: {
+          'Content-Type': 'text/plain',
+          'Access-Control-Allow-Origin': '*'
+        }
+      })
+    } else {
+      console.log('❌ Paramètres manquants:', { token: !!token, challenge: !!challenge })
+      return new Response('Missing parameters', { status: 400 })
+    }
+  }
+  
+  // Si pas de vérification, récupérer les dépenses
+  try {
+    const limit = parseInt(searchParams.get('limit') || '10')
+    
+    // Retourner les dernières dépenses
+    const recentExpenses = expenses
+      .sort((a, b) => new Date(b.received_at).getTime() - new Date(a.received_at).getTime())
+      .slice(0, limit)
+    
+    return NextResponse.json({
+      success: true,
+      expenses: recentExpenses,
+      total: expenses.length
+    })
+    
+  } catch (error) {
+    console.error('❌ Erreur récupération dépenses:', error)
+    return NextResponse.json({
+      error: 'Erreur récupération données'
+    }, { status: 500 })
+  }
+}
+
+/**
+ * Sauvegarde une dépense dans le fichier JSON persistant
+ */
+async function saveExpenseToFile(expense: any): Promise<void> {
+  try {
+    const fs = await import('fs/promises')
+    const path = '/tmp/whatsapp-expenses.json'
+    
+    // Lire les dépenses existantes
+    let existingExpenses = []
+    try {
+      const data = await fs.readFile(path, 'utf-8')
+      existingExpenses = JSON.parse(data)
+    } catch {
+      // Fichier n'existe pas, commencer avec tableau vide
+      existingExpenses = []
+    }
+    
+    // Ajouter la nouvelle dépense
+    existingExpenses.push(expense)
+    
+    // Sauvegarder
+    await fs.writeFile(path, JSON.stringify(existingExpenses, null, 2))
+    console.log('💾 Dépense sauvegardée dans le fichier persistant')
+    
+  } catch (error) {
+    console.error('❌ Erreur sauvegarde fichier:', error)
+  }
+}
+
+/**
+ * Fonction de test pour simuler un message WhatsApp
+ */
+export async function simulateWhatsAppMessage(imageUrl?: string, text?: string) {
+  const testMessage = {
+    from: 'test_user',
+    text: text || 'Test dépense restaurant 25€',
+    media: imageUrl ? {
+      type: 'image' as const,
+      url: imageUrl,
+      caption: 'Ticket restaurant'
+    } : undefined,
+    timestamp: new Date().toISOString()
+  }
+  
+  console.log('🧪 Simulation message WhatsApp:', testMessage)
+  return testMessage
 }

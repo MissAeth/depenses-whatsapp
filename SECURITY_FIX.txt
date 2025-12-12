@@ -1,0 +1,121 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║               🔒 CORRECTION DE SÉCURITÉ - LOGIN UTILISATEUR                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Date : $(date)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔴 PROBLÈME IDENTIFIÉ
+
+L'API /api/auth/login acceptait N'IMPORTE QUEL numéro de téléphone sans 
+vérifier s'il existait dans la base de données.
+
+Impact : Risque de sécurité majeur
+• N'importe qui pouvait accéder au dashboard
+• Pas de contrôle d'accès
+• Comptes non enregistrés pouvaient se connecter
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ CORRECTION APPLIQUÉE
+
+Fichier modifié : src/app/api/auth/login/route.ts
+
+Ajouts :
+1. Import de Supabase client
+2. Vérification de l'existence de l'utilisateur dans la table "users"
+3. Vérification que le compte est actif (is_active = true)
+4. Messages d'erreur clairs pour l'utilisateur
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔒 SÉCURITÉ RENFORCÉE
+
+Maintenant, le login utilisateur vérifie :
+
+✅ Le numéro est valide (format correct)
+✅ L'utilisateur EXISTE dans la base de données
+✅ Le compte est ACTIF (is_active = true)
+
+Messages d'erreur :
+• "Numéro invalide" → Format incorrect
+• "Numéro non enregistré. Contactez un administrateur." → N'existe pas en BDD
+• "Compte désactivé. Contactez un administrateur." → Compte inactif
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 WORKFLOW DE CONNEXION (Utilisateur standard)
+
+1. Utilisateur entre son numéro sur /login
+2. API vérifie le format du numéro
+3. API interroge Supabase : SELECT * FROM users WHERE phone = '...'
+4. Si utilisateur n'existe PAS → Erreur 401
+5. Si utilisateur existe MAIS is_active = false → Erreur 403
+6. Si OK → Cookie créé, redirection vers dashboard
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TESTS À EFFECTUER APRÈS DÉPLOIEMENT
+
+Test 1 : Utilisateur existant et actif
+• Numéro : +33612345678 (Jean Dupont)
+• Résultat attendu : ✅ Connexion réussie
+
+Test 2 : Utilisateur existant mais inactif
+• Numéro : +33687654321 (Pierre Durand)
+• Résultat attendu : ❌ "Compte désactivé"
+
+Test 3 : Utilisateur inexistant
+• Numéro : +33600000000 (n'existe pas)
+• Résultat attendu : ❌ "Numéro non enregistré"
+
+Test 4 : Format invalide
+• Numéro : "abc123"
+• Résultat attendu : ❌ "Numéro invalide"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 CODE AJOUTÉ
+
+// Vérifier que l'utilisateur existe dans la base de données
+const { data: user, error: dbError } = await supabase
+  .from('users')
+  .select('id, phone, is_active, role')
+  .or(`phone.eq.${phone},phone.eq.+${phone}`)
+  .single()
+
+if (dbError || !user) {
+  return NextResponse.json(
+    { success: false, error: 'Numéro non enregistré. Contactez un administrateur.' },
+    { status: 401 }
+  )
+}
+
+// Vérifier que le compte est actif
+if (!user.is_active) {
+  return NextResponse.json(
+    { success: false, error: 'Compte désactivé. Contactez un administrateur.' },
+    { status: 403 }
+  )
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ BUILD RÉUSSI
+
+npm run build : ✅ Succès
+TypeScript : ✅ Pas d'erreur
+Routes générées : ✅ 33 pages
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 PROCHAINES ÉTAPES
+
+1. Déployer sur Vercel
+2. Tester les 4 scénarios ci-dessus
+3. Vérifier les logs dans Vercel si problème
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cette correction ferme une faille de sécurité majeure ! 🔒

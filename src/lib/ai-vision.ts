@@ -29,15 +29,16 @@ function getAIConfig(): AIConfig {
   }
 
   // Vérifier Google Gemini
-  if (process.env.GEMINI_API_KEY) {
+  const geminiKey = process.env.GEMINI_API_KEY
+  if (geminiKey) {
     console.log('🤖 Provider détecté: Google Gemini')
-    console.log('  - Clé API:', process.env.GEMINI_API_KEY.substring(0, 10) + '...')
+    console.log('  - Clé API:', geminiKey.substring(0, 10) + '...')
     // Utiliser gemini-1.5-flash par défaut (gratuit et supporte les images)
     const defaultModel = process.env.GEMINI_MODEL || 'gemini-1.5-flash'
     console.log('  - Modèle:', defaultModel)
     return {
       provider: 'gemini',
-      apiKey: process.env.GEMINI_API_KEY,
+      apiKey: geminiKey,
       model: defaultModel
     }
   }

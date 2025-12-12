@@ -1,0 +1,106 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║           GUIDE D'ACTIVATION - ADMINISTRATION SGDF                           ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📋 VOUS AVEZ 2 FICHIERS À EXÉCUTER DANS SUPABASE :
+
+   ✅ SCRIPT_1_TABLES.txt  → Crée les 3 tables (users, admin_sessions, admin_logs)
+   ✅ SCRIPT_2_ADMIN.txt   → Crée le compte admin et des utilisateurs de test
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 ÉTAPE 1 : Exécuter SCRIPT_1_TABLES.txt
+
+1️⃣  Ouvrez le fichier SCRIPT_1_TABLES.txt avec un éditeur de texte
+    (Notepad, TextEdit, VS Code, etc.)
+
+2️⃣  Sélectionnez TOUT le contenu (Ctrl+A ou Cmd+A)
+
+3️⃣  Copiez (Ctrl+C ou Cmd+C)
+
+4️⃣  Ouvrez Supabase SQL Editor dans votre navigateur :
+    https://supabase.com/dashboard/project/djqrupuytjqpajoquejl/editor
+
+5️⃣  Cliquez dans l'éditeur SQL (zone blanche)
+
+6️⃣  Supprimez tout le contenu existant (Ctrl+A puis Suppr)
+
+7️⃣  Collez le script copié (Ctrl+V ou Cmd+V)
+
+8️⃣  Cliquez sur le bouton "RUN" ▶️ en haut à droite
+
+9️⃣  Attendez 3-5 secondes...
+
+✅  Vous devriez voir "Success" en vert !
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 ÉTAPE 2 : Exécuter SCRIPT_2_ADMIN.txt
+
+1️⃣  Ouvrez le fichier SCRIPT_2_ADMIN.txt avec un éditeur de texte
+
+2️⃣  Sélectionnez TOUT le contenu (Ctrl+A ou Cmd+A)
+
+3️⃣  Copiez (Ctrl+C ou Cmd+C)
+
+4️⃣  Retournez dans Supabase SQL Editor
+
+5️⃣  Supprimez le script précédent (Ctrl+A puis Suppr)
+
+6️⃣  Collez le nouveau script (Ctrl+V ou Cmd+V)
+
+7️⃣  Cliquez sur "RUN" ▶️
+
+✅  Vous devriez voir un tableau avec 4 utilisateurs créés !
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 ÉTAPE 3 : Tester le login admin
+
+1️⃣  Ouvrez votre navigateur
+
+2️⃣  Allez sur : https://sgdf-notes-de-frais-lovat.vercel.app/admin/login
+
+3️⃣  Entrez les identifiants :
+    • Téléphone : +33615722037
+    • Mot de passe : admin123
+
+4️⃣  Cliquez "Se connecter"
+
+✅  Vous devriez être redirigé vers le dashboard admin !
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 C'EST TERMINÉ !
+
+Si tout fonctionne :
+• Vous pouvez créer des utilisateurs
+• Vous pouvez les modifier/désactiver
+• Vous pouvez voir les logs d'audit
+• Les utilisateurs peuvent se connecter avec leur téléphone
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❓ EN CAS DE PROBLÈME
+
+• "Erreur function does not exist" 
+  → Le script n'a pas été copié en entier. Recommencez.
+
+• "Identifiants invalides" au login
+  → Les tables sont créées mais pas le compte admin. Exécutez SCRIPT_2_ADMIN.txt
+
+• "Table already exists"
+  → C'est normal ! Les scripts utilisent IF NOT EXISTS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📞 SUPPORT
+
+Une fois l'administration activée, vous pourrez :
+
+1️⃣  Améliorer les notifications (remplacer alert() par des toasts)
+2️⃣  Ajouter l'export Excel professionnel
+3️⃣  Implémenter bcrypt pour les mots de passe
+4️⃣  Améliorer le viewer d'images
+
+Bon courage ! 🚀

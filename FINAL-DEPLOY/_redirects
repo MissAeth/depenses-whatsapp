@@ -1,0 +1,2 @@
+# Netlify redirects - Force toutes les routes vers index.html
+/*    /index.html   200

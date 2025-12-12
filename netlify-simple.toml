@@ -1,0 +1,8 @@
+[build]
+  # Pas de build - juste du HTML statique !
+  command = "echo 'No build needed - static HTML only'"
+  publish = "public"
+  
+[build.environment]
+  # Pas de Node.js requis
+  NODE_VERSION = "18"

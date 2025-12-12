@@ -1,0 +1,37 @@
+# Fichiers locaux
+.env.local
+.env
+*.log
+
+# Dossiers de développement
+.next
+node_modules
+.cache
+
+# Dossiers temporaires
+deploy-folder
+FINAL-DEPLOY
+pages-backup
+
+# Documentation de déploiement
+DEPLOY_*.md
+VERCEL_*.md
+auto-deploy.sh
+deploy-everything.sh
+
+# Tests et debug
+TEST_*.html
+debug_*.py
+
+# Fichiers de sauvegarde
+*~
+*.backup
+*.bak
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db

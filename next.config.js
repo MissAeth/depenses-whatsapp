@@ -17,7 +17,6 @@ const nextConfig = {
     }
     return config;
   },
-  // Pas de redirection - la page d'accueil affiche directement les dépenses
   // Désactiver l'export statique pour permettre les API routes
   // output: 'export'
 };

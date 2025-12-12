@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { ClipboardDocumentListIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusCircleIcon, PaperAirplaneIcon, SparklesIcon } from '@heroicons/react/24/outline'
-import { processExpenseContent, type ExtractedExpenseData } from '@/lib/ai-processor'
+import { processExpenseContent, type ExtractedExpenseData } from '@/lib/ai-processor-unified'
 
 interface ExpenseFormProps {
   readonly capturedImage: string | null
@@ -12,13 +12,6 @@ interface ExpenseFormProps {
   readonly onPersistBranch?: (branch: string) => Promise<void> | void
   readonly onCreateNewNote?: () => void
   readonly onBranchChange?: (branch: string) => void
-  readonly importedData?: {
-    amount?: number
-    merchant?: string
-    category?: string
-    description?: string
-    date?: string
-  } | null
 }
 
 // Catégories de dépenses personnelles
@@ -33,13 +26,89 @@ const EXPENSE_CATEGORIES = [
   'Divers'
 ]
 
-export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange, isOnline = true, importedData = null }: ExpenseFormProps & { isOnline?: boolean }) {
+// Synonymes pour normaliser la catégorie IA vers notre liste
+const CATEGORY_SYNONYMS: Record<string, string> = {
+  'restaurant': 'Restauration',
+  'restauration': 'Restauration',
+  'resto': 'Restauration',
+  'bar': 'Restauration',
+  'café': 'Restauration',
+  'cafe': 'Restauration',
+  'boulangerie': 'Restauration',
+  'fastfood': 'Restauration',
+  'transport': 'Transport',
+  'taxi': 'Transport',
+  'vtc': 'Transport',
+  'uber': 'Transport',
+  'metro': 'Transport',
+  'bus': 'Transport',
+  'train': 'Transport',
+  'sncf': 'Transport',
+  'carburant': 'Transport',
+  'essence': 'Transport',
+  'parking': 'Transport',
+  'hotel': 'Hébergement',
+  'hôtel': 'Hébergement',
+  'hébergement': 'Hébergement',
+  'hebergement': 'Hébergement',
+  'airbnb': 'Hébergement',
+  'booking': 'Hébergement',
+  'fournitures': 'Fournitures',
+  'bureau': 'Fournitures',
+  'papeterie': 'Fournitures',
+  'santé': 'Santé',
+  'sante': 'Santé',
+  'pharmacie': 'Santé',
+  'médecin': 'Santé',
+  'medecin': 'Santé',
+  'docteur': 'Santé',
+  'loisirs': 'Loisirs',
+  'cinema': 'Loisirs',
+  'cinéma': 'Loisirs',
+  'culture': 'Loisirs',
+}
+
+function normalizeCategory(input?: string): string {
+  if (!input) return ''
+  const key = input.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
+  const mapped = CATEGORY_SYNONYMS[key]
+  if (mapped && EXPENSE_CATEGORIES.includes(mapped)) return mapped
+  // Essai fuzzy simple: si contient un mot clé connu
+  for (const [syn, target] of Object.entries(CATEGORY_SYNONYMS)) {
+    if (key.includes(syn) && EXPENSE_CATEGORIES.includes(target)) return target
+  }
+  return ''
+}
+
+// Suggestion de type de dépense (expenseType) à partir des infos IA
+function suggestExpenseType(ai: ExtractedExpenseData): string {
+  const source = `${ai.merchant || ''} ${ai.description || ''}`.toLowerCase()
+  const map: Array<{ keywords: string[]; type: string }> = [
+    { keywords: ['restaurant','resto','bar','cafe','pizza','boulangerie'], type: 'Restaurant, Bar, Café' },
+    { keywords: ['course','courses','supermarche','supermarché','carrefour','monoprix','auchan','intermarche'], type: 'Courses alimentaires' },
+    { keywords: ['taxi','uber','bolt','vtc','metro','bus','rer','tram','sncf','train'], type: 'Transport en commun' },
+    { keywords: ['hotel','hôtel','airbnb','booking','nuit','chambre'], type: 'Hôtel, Hébergement' },
+    { keywords: ['pharmacie','medecin','médecin','docteur','clinique'], type: 'Médecin, Pharmacie' },
+    { keywords: ['fourniture','bureau','papeterie'], type: 'Fournitures bureau' },
+    { keywords: ['abonnement','subscription','monthly'], type: 'Abonnement services' },
+    { keywords: ['cinema','cinéma','loisir','culture','spectacle','musée','musee'], type: 'Loisirs, Culture' },
+    { keywords: ['peage','péage','essence','carburant','station'], type: 'Carburant, Péage' },
+    { keywords: ['vetement','vêtement','zara','hm','uniqlo'], type: 'Vêtements' },
+  ]
+  for (const rule of map) {
+    if (rule.keywords.some(k => source.includes(k))) return rule.type
+  }
+  // fallback
+  return ai.description || ''
+}
+
+export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange, isOnline = true }: ExpenseFormProps & { isOnline?: boolean }) {
   const [formData, setFormData] = useState({
-    date: importedData?.date || new Date().toISOString().split('T')[0],
-    branch: importedData?.category || initialBranch || '',
+    date: new Date().toISOString().split('T')[0],
+    branch: initialBranch || '',
     expenseType: '',
-    amount: importedData?.amount ? importedData.amount.toString() : '',
-    description: importedData?.description || ''
+    amount: '',
+    description: ''
   })
   const [branchPersistStatus, setBranchPersistStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
@@ -51,49 +120,25 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
 
   const [aiProcessing, setAiProcessing] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<ExtractedExpenseData | null>(null)
-  const [aiError, setAiError] = useState<string | null>(null)
 
-  // Si des données sont importées, pré-remplir le formulaire
-  useEffect(() => {
-    if (importedData) {
-      console.log('📥 Données importées détectées:', importedData)
-      setFormData(prev => ({
-        ...prev,
-        date: importedData.date || prev.date,
-        branch: importedData.category || prev.branch,
-        amount: importedData.amount ? importedData.amount.toString() : prev.amount,
-        description: importedData.description || prev.description
-      }))
-      
-      // Mapper le type de dépense si on a la catégorie
-      if (importedData.category && importedData.merchant) {
-        const mapCategoryToExpenseType = (category: string, merchant: string): string => {
-          const combined = `${merchant.toLowerCase()} ${importedData.description?.toLowerCase() || ''}`.toLowerCase()
-          
-          if (category === 'Restauration') {
-            if (combined.includes('restaurant') || combined.includes('resto') || combined.includes('café') || combined.includes('cafe') || combined.includes('bar')) {
-              return 'Restaurant, Bar, Café'
-            }
-            return 'Courses alimentaires'
-          }
-          if (category === 'Transport') {
-            if (combined.includes('taxi') || combined.includes('uber') || combined.includes('vtc')) return 'Taxi, VTC'
-            if (combined.includes('carburant') || combined.includes('essence') || combined.includes('péage')) return 'Carburant, Péage'
-            return 'Transport en commun'
-          }
-          if (category === 'Hébergement') return 'Hôtel, Hébergement'
-          if (category === 'Santé') return 'Médecin, Pharmacie'
-          if (category === 'Fournitures') return 'Fournitures bureau'
-          if (category === 'Abonnements') return 'Abonnement services'
-          if (category === 'Loisirs') return 'Loisirs, Culture'
-          return 'Autres'
-        }
-        
-        const expenseType = mapCategoryToExpenseType(importedData.category, importedData.merchant || '')
-        setFormData(prev => ({ ...prev, expenseType }))
-      }
-    }
-  }, [importedData])
+  // Duplicate detection state
+  const [duplicateCheck, setDuplicateCheck] = useState<{
+    checking: boolean
+    isDuplicate: boolean
+    duplicates: Array<{
+      id: string
+      amount: number
+      merchant: string
+      description: string
+      received_at: string
+      similarity: number
+    }>
+  }>({
+    checking: false,
+    isDuplicate: false,
+    duplicates: []
+  })
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false)
 
   // Traiter l'image automatiquement avec l'IA quand une nouvelle image arrive
   useEffect(() => {
@@ -108,7 +153,6 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
         processImageWithAI()
       }, 100)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [capturedImage]) // Fermeture correcte du useEffect
 
   const processImageWithAI = async () => {
@@ -119,9 +163,8 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
       return
     }
 
-    console.log('🚀 Démarrage traitement avec Gemini...')
+    console.log('🚀 Démarrage traitement IA...')
     setAiProcessing(true)
-    setAiError(null) // Réinitialiser l'erreur
     
     // Reset du formulaire avant nouveau traitement
     setFormData(prev => ({
@@ -132,136 +175,35 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
     }))
 
     try {
-      // Utiliser Gemini directement via l'API
-      console.log('🤖 Extraction avec Gemini...')
-      const response = await fetch('/api/process-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ imageBase64: capturedImage })
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Erreur API: ${response.status} - ${errorText}`)
-      }
-
-      const result = await response.json()
-      console.log('📥 Réponse API:', result)
+      console.log('🤖 Appel processExpenseContent avec image...')
+      const extractedData = await processExpenseContent(capturedImage)
+      console.log('✅ Données extraites par IA:', extractedData)
       
-      if (!result.success || !result.data) {
-        throw new Error(result.error || result.message || 'Aucune donnée extraite')
-      }
-      
-      const extractedData = result.data
-      console.log('✅ Données extraites par Gemini:', extractedData)
-      
-      // Vérifier que des données valides ont été extraites
-      if (extractedData.amount === 0 && extractedData.merchant === 'Marchand inconnu') {
-        throw new Error('Aucune information valide n\'a pu être extraite du ticket. Vérifiez que l\'image est claire.')
-      }
-      
-      console.log('💾 Sauvegarde des suggestions Gemini...')
+      console.log('💾 Sauvegarde des suggestions IA...')
       setAiSuggestions(extractedData)
-      setAiError(null)
-      
-      // Fonction pour mapper la catégorie et le marchand au type de dépense
-      const mapCategoryToExpenseType = (category: string, merchant: string, description: string): string => {
-        const merchantLower = merchant.toLowerCase()
-        const descLower = description.toLowerCase()
-        const combined = `${merchantLower} ${descLower}`.toLowerCase()
-        
-        // Mapping basé sur la catégorie
-        if (category === 'Restauration') {
-          if (combined.includes('restaurant') || combined.includes('resto') || combined.includes('café') || combined.includes('cafe') || combined.includes('bar') || combined.includes('brasserie') || combined.includes('bistrot')) {
-            return 'Restaurant, Bar, Café'
-          }
-          return 'Courses alimentaires'
-        }
-        
-        if (category === 'Transport') {
-          if (combined.includes('taxi') || combined.includes('uber') || combined.includes('bolt') || combined.includes('vtc')) {
-            return 'Taxi, VTC'
-          }
-          if (combined.includes('carburant') || combined.includes('essence') || combined.includes('diesel') || combined.includes('péage') || combined.includes('peage') || combined.includes('station')) {
-            return 'Carburant, Péage'
-          }
-          return 'Transport en commun'
-        }
-        
-        if (category === 'Hébergement') {
-          return 'Hôtel, Hébergement'
-        }
-        
-        if (category === 'Santé') {
-          return 'Médecin, Pharmacie'
-        }
-        
-        if (category === 'Fournitures') {
-          return 'Fournitures bureau'
-        }
-        
-        if (category === 'Abonnements') {
-          return 'Abonnement services'
-        }
-        
-        if (category === 'Loisirs') {
-          return 'Loisirs, Culture'
-        }
-        
-        return 'Autres'
-      }
-      
-      // Formater la date si elle existe
-      let formattedDate = formData.date // Garder la date actuelle par défaut
-      if (extractedData.date) {
-        try {
-          // Vérifier que la date est valide
-          const dateObj = new Date(extractedData.date)
-          if (!isNaN(dateObj.getTime())) {
-            formattedDate = extractedData.date.split('T')[0] // Format YYYY-MM-DD
-          }
-        } catch (e) {
-          console.warn('Date invalide extraite:', extractedData.date)
-        }
-      }
-      
-      // Déterminer le type de dépense
-      const expenseType = mapCategoryToExpenseType(
-        extractedData.category || '',
-        extractedData.merchant || '',
-        extractedData.description || ''
-      )
-      
-      // Construire la description
-      const descriptionParts = []
-      if (extractedData.merchant && extractedData.merchant !== 'Marchand inconnu') {
-        descriptionParts.push(extractedData.merchant)
-      }
-      if (extractedData.description && extractedData.description !== 'Description automatique') {
-        descriptionParts.push(extractedData.description)
-      }
-      const finalDescription = descriptionParts.length > 0 ? descriptionParts.join(' - ') : ''
       
       console.log('📝 Auto-remplissage du formulaire...')
+      // Auto-remplir le formulaire avec les nouvelles suggestions IA
+      // Mapping IA -> Form:
+      // - branch: catégorie suggérée par l'IA si elle est dans notre liste, sinon vide
+      // - expenseType: type suggéré si pertinent, sinon vide
+      const normalizedCategory = normalizeCategory(extractedData.category)
+      const matchedType = suggestExpenseType(extractedData)
+
       setFormData(prev => ({
         ...prev,
-        date: formattedDate,
         amount: extractedData.amount > 0 ? extractedData.amount.toString() : '',
-        branch: extractedData.category || prev.branch, // Garder la branche précédente si pas de catégorie
-        expenseType: expenseType,
-        description: finalDescription
+        branch: normalizedCategory,
+        expenseType: matchedType,
+        description: `${extractedData.merchant || ''}${extractedData.description ? ' - ' + extractedData.description : ''}`.trim()
       }))
       
-      console.log('✨ Traitement Gemini terminé avec succès')
+      console.log('✨ Traitement IA terminé avec succès')
     } catch (error) {
-      console.error('❌ Erreur traitement Gemini:', error)
+      console.error('❌ Erreur traitement IA:', error)
       setAiSuggestions(null)
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue lors du traitement de l\'image'
-      setAiError(errorMessage)
     } finally {
-      console.log('🏁 Fin du traitement')
+      console.log('🏁 Fin du traitement IA')
       setAiProcessing(false)
     }
   }
@@ -297,6 +239,59 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
     return `${date} - ${branch}${typeShort ? ' - ' + typeShort : ''} - ${formattedAmount}.jpg`
   }
 
+  const checkForDuplicates = async () => {
+    if (!formData.amount || !formData.description || !formData.date) {
+      return
+    }
+
+    setDuplicateCheck(prev => ({ ...prev, checking: true }))
+
+    try {
+      // Extraire le marchand de la description
+      const merchant = formData.description.split(' - ')[0].trim() || 'Marchand inconnu'
+
+      const response = await fetch('/api/expenses/check-duplicates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: formatAmount(formData.amount),
+          merchant,
+          date: formData.date,
+          whatsapp_from: userEmail
+        })
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.isDuplicate) {
+        setDuplicateCheck({
+          checking: false,
+          isDuplicate: true,
+          duplicates: result.duplicates
+        })
+        setShowDuplicateModal(true)
+        return true // Doublon détecté
+      } else {
+        setDuplicateCheck({
+          checking: false,
+          isDuplicate: false,
+          duplicates: []
+        })
+        return false // Pas de doublon
+      }
+    } catch (error) {
+      console.error('Erreur vérification doublons:', error)
+      setDuplicateCheck({
+        checking: false,
+        isDuplicate: false,
+        duplicates: []
+      })
+      return false // En cas d'erreur, continuer quand même
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -308,6 +303,18 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
       return
     }
 
+    // Vérifier les doublons avant d'enregistrer
+    const hasDuplicate = await checkForDuplicates()
+    if (hasDuplicate) {
+      // Le modal de confirmation s'affichera, l'utilisateur devra confirmer
+      return
+    }
+
+    // Continuer avec l'enregistrement
+    await saveExpense()
+  }
+
+  const saveExpense = async () => {
     setIsSubmitting(true)
     setSubmitStatus({ type: null, message: '' })
 
@@ -344,6 +351,12 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
           amount: '',
             description: ''
         }))
+        // Reset duplicate check
+        setDuplicateCheck({
+          checking: false,
+          isDuplicate: false,
+          duplicates: []
+        })
       } else {
         setSubmitStatus({
           type: 'error',
@@ -379,126 +392,66 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
-          <ClipboardDocumentListIcon className="w-5 h-5 text-white" aria-hidden="true" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold text-zinc-900">Informations de la dépense</h2>
-          <p className="text-xs text-zinc-500">Remplissez les détails de votre dépense</p>
-        </div>
-      </div>
+    <>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+        <ClipboardDocumentListIcon className="w-5 h-5 text-zinc-700" aria-hidden="true" />
+        Informations de la dépense
+      </h2>
 
       {capturedImage && (
-        <div className="space-y-3 animate-slide-up">
+        <div className="space-y-2">
           <label htmlFor="image-preview" className="block text-sm font-medium text-zinc-700">
             Aperçu du justificatif
           </label>
-          <div className="relative rounded-xl overflow-hidden border-2 border-zinc-200 shadow-md">
-            <Image
-              id="image-preview"
-              src={capturedImage}
-              alt="Justificatif"
-              width={500}
-              height={200}
-              className="w-full h-48 object-cover"
-            />
-          </div>
+          <Image
+            id="image-preview"
+            src={capturedImage}
+            alt="Justificatif"
+            width={500}
+            height={200}
+            className="w-full h-48 object-cover rounded-lg border border-zinc-200"
+          />
           
           {/* Statut du traitement IA */}
           {aiProcessing && (
-            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl shadow-sm animate-pulse">
-              <div className="flex-shrink-0">
-                <svg className="animate-spin h-5 w-5 text-blue-600" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-              </div>
-              <SparklesIcon className="w-5 h-5 text-blue-600 flex-shrink-0" />
-              <div className="flex flex-col flex-1">
-                <span className="text-sm font-semibold text-blue-900">Analyse en cours avec Gemini...</span>
-                <span className="text-xs text-blue-700 mt-0.5">Extraction des données en cours</span>
+            <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <svg className="animate-spin h-4 w-4 text-blue-600" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              <SparklesIcon className="w-4 h-4 text-blue-600" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-blue-800">Analyse en cours avec l'IA...</span>
+                <span className="text-xs text-blue-600">OCR + Extraction des données</span>
               </div>
             </div>
           )}
           
-          {aiError && (
-            <div className="p-4 bg-gradient-to-r from-rose-50 to-red-50 border border-rose-200 rounded-xl shadow-sm animate-slide-up">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-rose-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md">
-                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
+          {aiSuggestions && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <SparklesIcon className="w-5 h-5 text-green-600 mt-0.5" />
                 <div className="flex-1">
-                  <h4 className="text-sm font-semibold text-rose-900 mb-1">Erreur lors de la lecture du ticket</h4>
-                  <p className="text-sm text-rose-800">{aiError}</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAiError(null)
-                      processImageWithAI()
-                    }}
-                    className="mt-2 text-xs text-rose-700 hover:text-rose-900 underline font-medium"
-                  >
-                    Réessayer
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {aiSuggestions && !aiError && (
-            <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl shadow-sm animate-scale-in">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md">
-                  <SparklesIcon className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h4 className="text-sm font-semibold text-green-900">Données extraites par Gemini</h4>
-                      <p className="text-xs text-green-700 mt-0.5">✨ Intelligence artificielle Google</p>
-                    </div>
+                  <div className="flex justify-between items-start">
+                    <h4 className="text-sm font-medium text-green-800">Données extraites par l'IA</h4>
                     <button
                       type="button"
                       onClick={() => {
                         console.log('🔄 Force nouveau traitement IA...')
                         processImageWithAI()
                       }}
-                      className="text-xs text-green-700 hover:text-green-900 underline font-medium flex-shrink-0 ml-2"
+                      className="text-xs text-green-600 hover:text-green-800 underline"
                     >
                       Retraiter
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs text-green-800 mb-3">
-                    <div className={`bg-white/60 rounded-lg p-2 ${aiSuggestions.amount === 0 ? 'border-2 border-amber-300' : ''}`}>
-                      <span className="font-medium">Montant:</span> {aiSuggestions.amount > 0 ? `${aiSuggestions.amount}€` : 'Non détecté'}
-                    </div>
-                    <div className="bg-white/60 rounded-lg p-2">
-                      <span className="font-medium">Confiance:</span> {Math.round(aiSuggestions.confidence * 100)}%
-                    </div>
-                    <div className={`bg-white/60 rounded-lg p-2 col-span-2 ${aiSuggestions.merchant === 'Marchand inconnu' ? 'border-2 border-amber-300' : ''}`}>
-                      <span className="font-medium">Marchand:</span> {aiSuggestions.merchant}
-                    </div>
-                    <div className="bg-white/60 rounded-lg p-2 col-span-2">
-                      <span className="font-medium">Catégorie:</span> {aiSuggestions.category}
-                    </div>
+                  <div className="mt-2 text-xs text-green-700">
+                    <p><strong>Montant:</strong> {aiSuggestions.amount}€</p>
+                    <p><strong>Marchand:</strong> {aiSuggestions.merchant}</p>
+                    <p><strong>Catégorie:</strong> {aiSuggestions.category}</p>
+                    <p><strong>Confiance:</strong> {Math.round(aiSuggestions.confidence * 100)}%</p>
                   </div>
-                  
-                  {/* Afficher le texte brut pour débogage (repliable) */}
-                  <details className="mt-2">
-                    <summary className="text-xs text-green-700 hover:text-green-900 cursor-pointer font-medium">
-                      📄 Voir le texte extrait par l&apos;OCR
-                    </summary>
-                    <div className="mt-2 p-2 bg-white/80 rounded text-xs text-green-900 font-mono max-h-32 overflow-y-auto border border-green-200">
-                      <pre className="whitespace-pre-wrap break-words">{aiSuggestions.rawText.substring(0, 500)}</pre>
-                      {aiSuggestions.rawText.length > 500 && (
-                        <p className="text-green-600 mt-1">... (texte tronqué, voir console pour le texte complet)</p>
-                      )}
-                    </div>
-                  </details>
                 </div>
               </div>
             </div>
@@ -507,14 +460,14 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
       )}
 
       <div className="space-y-2">
-        <label htmlFor="expenseType" className="block text-sm font-semibold text-zinc-900">
-          Type de dépense <span className="text-rose-600">*</span>
+        <label htmlFor="expenseType" className="block text-sm font-medium text-zinc-700">
+          Type de dépense *
         </label>
         <select
           id="expenseType"
           value={formData.expenseType}
           onChange={(e) => handleInputChange('expenseType', e.target.value)}
-          className="w-full p-3 border-2 border-zinc-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-zinc-900 transition-all hover:border-zinc-300 shadow-sm"
+          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         >
           <option value="">Sélectionner un type</option>
@@ -540,28 +493,28 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="date" className="block text-sm font-semibold text-zinc-900">
-          Date <span className="text-rose-600">*</span>
+        <label htmlFor="date" className="block text-sm font-medium text-zinc-700">
+          Date *
         </label>
         <input
           id="date"
           type="date"
           value={formData.date}
           onChange={(e) => handleInputChange('date', e.target.value)}
-          className="w-full p-3 border-2 border-zinc-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-zinc-900 transition-all hover:border-zinc-300 shadow-sm"
+          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         />
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="branch" className="block text-sm font-semibold text-zinc-900">
-          Catégorie <span className="text-rose-600">*</span>
+        <label htmlFor="branch" className="block text-sm font-medium text-zinc-700">
+          Catégorie *
         </label>
         <select
           id="branch"
           value={formData.branch}
           onChange={(e) => handleInputChange('branch', e.target.value)}
-          className="w-full p-3 border-2 border-zinc-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-zinc-900 transition-all hover:border-zinc-300 shadow-sm"
+          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         >
           <option value="">Sélectionner une catégorie</option>
@@ -599,8 +552,8 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="amount" className="block text-sm font-semibold text-zinc-900">
-          Montant (€) <span className="text-rose-600">*</span>
+        <label htmlFor="amount" className="block text-sm font-medium text-zinc-700">
+          Montant (€) *
         </label>
         <input
           id="amount"
@@ -609,14 +562,14 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
           placeholder="0.00"
           value={formData.amount}
           onChange={(e) => handleInputChange('amount', e.target.value)}
-          className="w-full p-3 border-2 border-zinc-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-zinc-900 transition-all hover:border-zinc-300 shadow-sm"
+          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         />
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="description" className="block text-sm font-semibold text-zinc-900">
-          Description <span className="text-zinc-400 text-xs font-normal">(optionnel)</span>
+        <label htmlFor="description" className="block text-sm font-medium text-zinc-700">
+          Description (optionnel)
         </label>
         <textarea
           id="description"
@@ -624,7 +577,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
           rows={3}
-          className="w-full p-3 border-2 border-zinc-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none bg-white text-zinc-900 transition-all hover:border-zinc-300 shadow-sm"
+          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 resize-none bg-white text-zinc-900"
         />
       </div>
 
@@ -684,9 +637,9 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
         <button
           type="submit"
           disabled={!isFormValid || isSubmitting || !isOnline}
-          className={`w-full p-4 rounded-xl font-semibold text-white transition-all focus:outline-none shadow-lg ${
+          className={`w-full p-4 rounded-lg font-semibold text-white transition-colors focus:outline-none ${
             isFormValid && !isSubmitting && isOnline
-              ? 'bg-gradient-to-r from-zinc-900 to-zinc-800 hover:from-zinc-800 hover:to-zinc-700 focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 transform hover:scale-[1.02] active:scale-[0.98]'
+              ? 'bg-zinc-900 hover:bg-zinc-800 focus:ring-2 focus:ring-zinc-400'
               : 'bg-zinc-300 cursor-not-allowed'
           }`}
         >
@@ -706,5 +659,88 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
         </button>
       </div>
     </form>
+
+    {/* Modal de confirmation de doublon */}
+    {showDuplicateModal && duplicateCheck.isDuplicate && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+          <div className="p-6 border-b border-zinc-200">
+            <h3 className="text-lg font-semibold text-amber-900 flex items-center gap-2">
+              <ExclamationTriangleIcon className="w-6 h-6 text-amber-600" />
+              ⚠️ Doublon potentiel détecté
+            </h3>
+          </div>
+          
+          <div className="p-6 overflow-y-auto max-h-[50vh]">
+            <p className="text-sm text-zinc-700 mb-4">
+              Nous avons trouvé {duplicateCheck.duplicates.length} dépense{duplicateCheck.duplicates.length > 1 ? 's' : ''} similaire{duplicateCheck.duplicates.length > 1 ? 's' : ''} pour le même jour :
+            </p>
+            
+            <div className="space-y-3 mb-6">
+              {duplicateCheck.duplicates.map((dup) => (
+                <div key={dup.id} className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-zinc-900">{dup.amount}€</span>
+                        <span className="text-sm text-zinc-600">· {dup.merchant}</span>
+                      </div>
+                      <p className="text-sm text-zinc-600">{dup.description}</p>
+                      <p className="text-xs text-zinc-500 mt-1">
+                        Reçu le {new Date(dup.received_at).toLocaleString('fr-FR')}
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0 ml-4">
+                      <span className="inline-block px-2 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded">
+                        {dup.similarity}% similaire
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-900">
+                <strong>Votre nouvelle dépense :</strong>
+              </p>
+              <div className="mt-2 text-sm text-blue-800">
+                <p>• Montant : {formData.amount}€</p>
+                <p>• Description : {formData.description}</p>
+                <p>• Date : {new Date(formData.date).toLocaleDateString('fr-FR')}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 border-t border-zinc-200 flex gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setShowDuplicateModal(false)
+                setDuplicateCheck({
+                  checking: false,
+                  isDuplicate: false,
+                  duplicates: []
+                })
+              }}
+              className="flex-1 px-4 py-3 border border-zinc-300 text-zinc-700 rounded-lg hover:bg-zinc-50 font-medium"
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                setShowDuplicateModal(false)
+                await saveExpense()
+              }}
+              className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-medium"
+            >
+              Enregistrer quand même
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
 }

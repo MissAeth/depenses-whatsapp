@@ -88,7 +88,7 @@ export const sendExpenseEmail = async (data: EmailData) => {
     throw e
   }
 
-  const defaultFromName = process.env.SMTP_FROM_NAME || 'Billz'
+  const defaultFromName = process.env.SMTP_FROM_NAME || 'Factures carte procurement SGDF'
   const fromRaw = process.env.SMTP_FROM?.trim()
   const fallbackAddress = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER
 
@@ -122,7 +122,8 @@ export const sendExpenseEmail = async (data: EmailData) => {
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background-color: ${primaryColor}; color: ${textOnPrimary}; padding: 20px; text-align: center;">
-  <h1 style="margin: 0; font-size: 24px;">📜 Billz</h1>
+  <h1 style="margin: 0; font-size: 24px;">📜 Facture carte procurement SGDF</h1>
+        <p style="margin: 10px 0 0 0; opacity: 0.9;">La Guillotière</p>
       </div>
       
       <div style="padding: 30px; background-color: #f9f9f9;">
@@ -163,14 +164,14 @@ export const sendExpenseEmail = async (data: EmailData) => {
         </div>
         
         <p style="color: #6B7280; font-size: 14px; margin-top: 30px;">
-          Email envoyé automatiquement par l'application Billz.
+          Email envoyé automatiquement par l'application Factures carte procurement SGDF.
         </p>
       </div>
     </div>
   `
 
   const textContent = `
-Billz
+Facture carte procurement SGDF - La Guillotière
 
 Nouvelle facture
 

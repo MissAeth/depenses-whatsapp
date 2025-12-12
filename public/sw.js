@@ -1,10 +1,12 @@
-/* Service Worker for Billz PWA */
-const CACHE_VERSION = 'v3';
+/* Service Worker for Factures carte procurement SGDF PWA */
+const CACHE_VERSION = 'v2';
 const APP_SHELL = [
-	'/',
-	'/manifest.json',
-	'/offline.html',
-	'/billz-logo.png'
+  '/',
+  '/manifest.json',
+  '/offline.html',
+  '/SGDF_symbole_RVB.png',
+  '/SGDF_symbole_blanc.png',
+  '/favicon.ico'
 ];
 
 self.addEventListener('install', (event) => {
@@ -47,27 +49,11 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request)
         .then((res) => {
-          // Only cache successful responses
-          if (res && res.status === 200) {
-            const clone = res.clone();
-            caches.open(CACHE_VERSION).then(cache => cache.put(event.request, clone));
-          }
+          const clone = res.clone();
+          caches.open(CACHE_VERSION).then(cache => cache.put(event.request, clone));
           return res;
         })
-        .catch((error) => {
-          // In development, don't redirect to offline page immediately
-          // Try to return the cached version first
-          return caches.match(event.request).then(cached => {
-            if (cached) return cached;
-            // Only show offline page if we're really offline and have no cache
-            if (!navigator.onLine) {
-              return caches.match('/offline.html');
-            }
-            // If online but fetch failed, it might be a server issue
-            // Return a network error instead of offline page
-            throw error;
-          });
-        }) 
+        .catch(() => caches.match(event.request).then(r => r || caches.match('/offline.html'))) 
     );
     return;
   }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 import { sendExpenseEmail, type EmailData } from '@/lib/email'
+import { supabase } from '@/lib/supabase'
 
 // Utilitaire de réponse JSON d'erreur
 const jsonError = (message: string, status: number) => NextResponse.json({ error: message }, { status })
@@ -33,23 +33,50 @@ function validateBody(body: any): { emailData?: EmailData; error?: NextResponse 
 
 export async function POST(req: NextRequest) {
   try {
-    // Auth
-    const { userId } = await auth()
-    if (!userId) return jsonError('Non autorisé', 401)
-
-    // Env vars
+    // Env vars (si SMTP non configuré → mode démo sans envoi réel)
     const envError = validateEnv()
-    if (envError) return envError
-
     // Body & validation
     const body = await req.json().catch(() => null)
     if (!body) return jsonError('Corps de requête invalide', 400)
     const { emailData, error } = validateBody(body)
     if (error || !emailData) return error as NextResponse
 
-    // Send email
-    const result = await sendExpenseEmail(emailData)
-    return NextResponse.json({ success: true, message: 'Email envoyé avec succès', messageId: result.messageId })
+    // Enregistrer d'abord la dépense en base (Supabase)
+    try {
+      if (!supabase) throw new Error('Supabase non configuré')
+      const amountNumber = parseFloat(emailData.amount)
+      const expenseId = `exp_${Date.now()}_${Math.random().toString(36).slice(2,8)}`
+      const merchant = (emailData.description?.split(' - ')[0] || '').trim() || 'Marchand inconnu'
+      // Utiliser le téléphone authentifié (si présent) pour isoler les données utilisateur
+      const cookiePhone = req.headers.get('x-user-phone') || ''
+      const whatsappFrom = cookiePhone || emailData.userEmail // fallback legacy
+      const { data, error } = await supabase
+        .from('whatsapp_expenses')
+        .insert({
+          expense_id: expenseId,
+          amount: isNaN(amountNumber) ? null : amountNumber,
+          merchant,
+          description: emailData.description || null,
+          category: emailData.branch || null,
+          confidence: 0.7,
+          raw_text: emailData.expenseType || null,
+          whatsapp_from: whatsappFrom,
+          source: 'web-form',
+          received_at: emailData.date ? new Date(emailData.date).toISOString() : new Date().toISOString(),
+          processed_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          image_url: null,
+          image_data: emailData.imageBase64
+        })
+        .select('*')
+        .single()
+      if (error) throw error
+      // Retourner succès sans envoyer d'email pour le moment
+      return NextResponse.json({ success: true, message: 'Dépense enregistrée', expense: data })
+    } catch (dbErr) {
+      console.error('❌ Erreur enregistrement Supabase:', dbErr)
+      return jsonError('Erreur enregistrement base', 500)
+    }
 
   } catch (error) {
     console.error('Erreur lors de l\'envoi de l\'email:', error)

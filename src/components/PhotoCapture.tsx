@@ -134,37 +134,25 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
   }
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-gradient-to-br from-zinc-900 to-zinc-800 rounded-xl flex items-center justify-center shadow-md">
-          <CameraIcon className="w-5 h-5 text-white" aria-hidden="true" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold text-zinc-900">Justificatif de dépense</h2>
-          <p className="text-xs text-zinc-500">Capturez ou importez une photo de votre facture</p>
-        </div>
-      </div>
+    <div className="space-y-4">
+      <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+        <CameraIcon className="w-5 h-5 text-zinc-700" aria-hidden="true" /> Justificatif de dépense
+      </h2>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <button
           onClick={handleCameraCapture}
-          className="group flex flex-col items-center justify-center p-6 bg-gradient-to-br from-zinc-900 to-zinc-800 text-white rounded-xl hover:from-zinc-800 hover:to-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+          className="flex flex-col items-center p-4 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors"
         >
-          <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-3 group-hover:bg-white/20 transition-colors">
-            <CameraIcon className="w-6 h-6" aria-hidden="true" />
-          </div>
-          <span className="text-sm font-semibold">Prendre photo</span>
-          <span className="text-xs text-zinc-300 mt-1">Appareil photo</span>
+          <CameraIcon className="w-6 h-6 mb-2" aria-hidden="true" />
+          <span className="text-sm font-medium">Prendre photo</span>
         </button>
         <button
           onClick={handleFileBrowse}
-          className="group flex flex-col items-center justify-center p-6 bg-white text-zinc-900 rounded-xl border-2 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
+          className="flex flex-col items-center p-4 bg-white text-zinc-900 rounded-lg border border-zinc-200 hover:bg-zinc-100 transition-colors"
         >
-          <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-zinc-200 transition-colors">
-            <ArrowUpOnSquareIcon className="w-6 h-6 text-zinc-700" aria-hidden="true" />
-          </div>
-          <span className="text-sm font-semibold">Importer fichier</span>
-          <span className="text-xs text-zinc-500 mt-1">Galerie / Fichiers</span>
+          <ArrowUpOnSquareIcon className="w-6 h-6 mb-2 text-zinc-700" aria-hidden="true" />
+          <span className="text-sm font-medium">Importer fichier</span>
         </button>
       </div>
 
@@ -186,21 +174,12 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
       />
 
       {compressedInfo && !errorMsg && (
-        <div className="p-3 rounded-lg bg-green-50 border border-green-200">
-          <p className="text-xs text-green-700 font-medium">
-            ✓ Optimisation réussie: {compressedInfo}
-          </p>
-        </div>
+        <p className="text-xs text-zinc-500">Optimisation: {compressedInfo}</p>
       )}
 
       {errorMsg && (
-        <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 animate-slide-up">
-          <div className="flex items-start gap-2">
-            <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            <p className="text-sm">{errorMsg}</p>
-          </div>
+        <div className="p-3 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-sm">
+          {errorMsg}
         </div>
       )}
     </div>

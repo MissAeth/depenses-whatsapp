@@ -1,9 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { DevicePhoneMobileIcon, PaperAirplaneIcon, EyeIcon, ArrowPathIcon, PhotoIcon, DocumentTextIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
-import { isAuthenticated } from '@/lib/auth'
+import { useState, useEffect } from 'react'
+import { DevicePhoneMobileIcon, PaperAirplaneIcon, EyeIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 interface WhatsAppExpense {
   id: string
@@ -17,668 +15,418 @@ interface WhatsAppExpense {
   original_message?: string
   received_at: string
   processed_at: string
+  image_url?: string
+  image_data?: string
 }
 
-interface Toast {
-  id: string
-  message: string
-  type: 'success' | 'error' | 'info'
+interface AnalyticsResponse {
+  success: boolean
+  totals: { totalAmount: number; totalCount: number; avgAmount: number }
+  byCategory: { category: string; amount: number; count: number }[]
+  topMerchants: { merchant: string; amount: number; count: number }[]
+  byDay: { date: string; amount: number; count: number }[]
 }
 
 export default function WhatsAppPage() {
-  const router = useRouter()
   const [expenses, setExpenses] = useState<WhatsAppExpense[]>([])
   const [loading, setLoading] = useState(false)
-  const [sending, setSending] = useState(false)
-  const [testMessage, setTestMessage] = useState('')
-  const [testResult, setTestResult] = useState('')
-  const [activeTab, setActiveTab] = useState<'text' | 'image'>('text')
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [imageCaption, setImageCaption] = useState('')
-  const [toasts, setToasts] = useState<Toast[]>([])
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [checkingAuth, setCheckingAuth] = useState(true)
-  const expensesRef = useRef<HTMLDivElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  // Onglets
+  const [activeTab, setActiveTab] = useState<'expenses' | 'analytics'>('expenses')
 
-  // Vérifier l'authentification au démarrage
+  // Analytics state
+  const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null)
+  const [aLoading, setALoading] = useState(false)
+
+  // Filters state
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('')
+  const [start, setStart] = useState('') // ISO date (YYYY-MM-DD)
+  const [end, setEnd] = useState('')     // ISO date (YYYY-MM-DD)
+  const [sort, setSort] = useState<'created_at' | 'amount' | 'received_at'>('created_at')
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const [total, setTotal] = useState(0)
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null)
+
   useEffect(() => {
-    if (!isAuthenticated()) {
-      router.push('/sign-in')
-      return
-    }
-    setCheckingAuth(false)
-  }, [router])
+    loadExpenses()
+    loadAnalytics()
+  }, [])
 
-  // Auto-refresh toutes les 30 secondes
-  useEffect(() => {
-    if (checkingAuth) return
-    
-    const interval = setInterval(() => {
-      if (!loading && !sending) {
-        loadExpenses(true) // Silent refresh
-      }
-    }, 30000)
-
-    return () => clearInterval(interval)
-  }, [loading, sending, checkingAuth])
-
-  // Charger les dépenses au démarrage (seulement si authentifié)
-  useEffect(() => {
-    if (!checkingAuth && isAuthenticated()) {
-      loadExpenses()
-    }
-  }, [checkingAuth])
-
-  // Scroll vers le haut quand une nouvelle dépense arrive
-  useEffect(() => {
-    if (expenses.length > 0 && expensesRef.current) {
-      const observer = new MutationObserver(() => {
-        expensesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      })
-      observer.observe(expensesRef.current, { childList: true })
-      return () => observer.disconnect()
-    }
-  }, [expenses.length])
-
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
-    const id = Date.now().toString()
-    const newToast: Toast = { id, message, type }
-    setToasts(prev => [...prev, newToast])
-    
-    // Auto-remove après 4 secondes
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id))
-    }, 4000)
-  }
-
-  const loadExpenses = async (silent = false) => {
-    if (!silent) {
-      setLoading(true)
-      setIsRefreshing(true)
-    }
-    
+  const loadExpenses = async (opts?: { resetPage?: boolean }) => {
+    setLoading(true)
     try {
-      const response = await fetch('/api/whatsapp')
+      const url = new URL('/api/whatsapp-expenses', window.location.origin)
+      if (search) url.searchParams.set('q', search)
+      if (category) url.searchParams.set('category', category)
+      if (start) url.searchParams.set('start', start)
+      if (end) url.searchParams.set('end', end)
+      if (sort) url.searchParams.set('sort', sort)
+      if (order) url.searchParams.set('order', order)
+      const currentPage = opts?.resetPage ? 1 : page
+      url.searchParams.set('page', String(currentPage))
+      url.searchParams.set('pageSize', String(pageSize))
+
+      const response = await fetch(url.toString())
       const data = await response.json()
-      
       if (data.success) {
-        const previousCount = expenses.length
-        setExpenses(data.expenses)
-        setLastRefresh(new Date())
-        
-        // Notification si nouvelle dépense
-        if (!silent && data.expenses.length > previousCount) {
-          const newCount = data.expenses.length - previousCount
-          showToast(`✨ ${newCount} nouvelle${newCount > 1 ? 's' : ''} dépense${newCount > 1 ? 's' : ''} reçue${newCount > 1 ? 's' : ''} !`, 'success')
-        }
-      } else {
-        if (!silent) {
-          showToast('❌ Erreur lors du chargement des dépenses', 'error')
-        }
+        const adaptedExpenses = data.expenses.map((expense: any) => ({
+          id: expense.id,
+          amount: expense.amount,
+          merchant: expense.merchant,
+          category: expense.category,
+          description: expense.description,
+          confidence: expense.confidence || 0,
+          source: expense.source,
+          whatsapp_from: expense.whatsapp_from,
+          original_message: expense.raw_text,
+          received_at: expense.received_at,
+          processed_at: expense.processed_at,
+          image_url: expense.image_url,
+          image_data: expense.image_data
+        }))
+        setExpenses(adaptedExpenses)
+        setTotal(data.total || adaptedExpenses.length)
+        if (opts?.resetPage) setPage(1)
       }
     } catch (error) {
       console.error('Erreur chargement dépenses:', error)
-      if (!silent) {
-        showToast('❌ Erreur de connexion', 'error')
-      }
     } finally {
       setLoading(false)
-      setIsRefreshing(false)
     }
   }
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // Vérifier la taille (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      showToast('❌ L\'image est trop volumineuse (max 10MB)', 'error')
-      if (fileInputRef.current) fileInputRef.current.value = ''
-      return
-    }
-
-    // Vérifier que c'est une image
-    if (!file.type.startsWith('image/')) {
-      showToast('❌ Veuillez sélectionner un fichier image', 'error')
-      if (fileInputRef.current) fileInputRef.current.value = ''
-      return
-    }
-
-    // Convertir en base64
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      const base64String = reader.result as string
-      setSelectedImage(base64String)
-      showToast('✅ Image sélectionnée avec succès', 'success')
-    }
-    reader.onerror = () => {
-      showToast('❌ Erreur lors de la lecture de l\'image', 'error')
-    }
-    reader.readAsDataURL(file)
-  }
-
-  const simulateWhatsAppMessage = async () => {
-    if (activeTab === 'text' && !testMessage.trim()) {
-      showToast('⚠️ Veuillez saisir un message', 'error')
-      return
-    }
-    if (activeTab === 'image' && !selectedImage) {
-      showToast('⚠️ Veuillez sélectionner une image', 'error')
-      return
-    }
-
-    setSending(true)
-    setTestResult('')
-    showToast('📤 Envoi en cours...', 'info')
-
+  const loadAnalytics = async () => {
+    setALoading(true)
     try {
-      const requestBody: any = {
-        from: 'test_user',
-        timestamp: new Date().toISOString()
-      }
-
-      if (activeTab === 'text') {
-        requestBody.text = testMessage
-        requestBody.message = testMessage
-      } else if (activeTab === 'image') {
-        requestBody.imageBase64 = selectedImage
-        requestBody.media = {
-          type: 'image',
-          url: selectedImage,
-          caption: imageCaption || ''
-        }
-        requestBody.text = imageCaption || ''
-        requestBody.message = imageCaption || ''
-      }
-
-      const response = await fetch('/api/whatsapp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-      })
-
-      const data = await response.json()
-      
-      if (data.success) {
-        setTestResult(`✅ Succès: ${data.message}`)
-        showToast('✅ Message envoyé avec succès !', 'success')
-        
-        // Reset form
-        setTestMessage('')
-        setSelectedImage(null)
-        setImageCaption('')
-        if (fileInputRef.current) fileInputRef.current.value = ''
-        
-        // Recharger les dépenses après un court délai
-        setTimeout(() => {
-          loadExpenses()
-        }, 1500)
-      } else {
-        const errorMsg = data.error || data.details || 'Erreur inconnue'
-        setTestResult(`❌ Erreur: ${errorMsg}`)
-        showToast(`❌ ${errorMsg}`, 'error')
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erreur réseau'
-      setTestResult(`❌ Erreur réseau: ${errorMessage}`)
-      showToast(`❌ Erreur de connexion: ${errorMessage}`, 'error')
+      const res = await fetch('/api/whatsapp-analytics')
+      const data: AnalyticsResponse = await res.json()
+      if (data.success) setAnalytics(data)
+    } catch (e) {
+      console.error('Erreur analytics:', e)
     } finally {
-      setSending(false)
+      setALoading(false)
     }
   }
 
-
-  const formatTimeAgo = (date: Date) => {
-    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000)
-    if (seconds < 60) return 'à l\'instant'
-    const minutes = Math.floor(seconds / 60)
-    if (minutes < 60) return `il y a ${minutes} min`
-    const hours = Math.floor(minutes / 60)
-    if (hours < 24) return `il y a ${hours}h`
-    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-  }
-
-  // Afficher un loader pendant la vérification de l'authentification
-  if (checkingAuth) {
-    return (
-      <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-zinc-600 font-medium">Vérification de l'authentification...</p>
-        </div>
-      </div>
-    )
-  }
+  // simulateWhatsAppMessage supprimé (simulation désactivée)
 
   return (
-    <main className="min-h-screen bg-zinc-50 p-4">
+    <>
+    <div className="min-h-screen bg-zinc-50 p-4">
       <div className="max-w-5xl mx-auto">
-
-      {/* Système de notifications Toast */}
-      <div className="fixed top-20 right-4 md:right-24 left-4 md:left-auto z-50 space-y-3 max-w-sm md:max-w-md">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`bg-white rounded-lg border shadow-sm p-4 min-w-[300px] max-w-md ${
-              toast.type === 'success'
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
-                : toast.type === 'error'
-                ? 'border-rose-200 bg-rose-50 text-rose-900'
-                : 'border-zinc-200 text-zinc-700'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              {toast.type === 'success' ? (
-                <CheckCircleIcon className="w-6 h-6 text-emerald-600 flex-shrink-0" />
-              ) : toast.type === 'error' ? (
-                <XCircleIcon className="w-6 h-6 text-rose-600 flex-shrink-0" />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0">
-                  <div className="w-2 h-2 rounded-full bg-zinc-600"></div>
-                </div>
-              )}
-              <p className="font-medium text-sm flex-1">{toast.message}</p>
-            </div>
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-2">
+            <DevicePhoneMobileIcon className="w-8 h-8 text-green-600" />
+            <h1 className="text-3xl font-bold text-zinc-900">WhatsApp Dépenses</h1>
           </div>
-        ))}
-      </div>
+          <p className="text-zinc-600">Testez la réception automatique de dépenses via WhatsApp</p>
+        </div>
 
-      {/* Header */}
-      <div className="bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden mb-6">
-        <div className="bg-white p-6 border-b border-zinc-200">
-          <div className="flex justify-between items-center">
-            <div>
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-zinc-900 rounded flex items-center justify-center">
-                  <span className="text-white text-sm">💰</span>
-                </div>
-                <h1 className="text-2xl font-semibold text-zinc-900">SmartExpense</h1>
-              </div>
-              <p className="text-zinc-500 mt-2">
-                Réception automatique • IA Gemini
-                {isRefreshing && <span className="ml-2 animate-pulse">🔄</span>}
-              </p>
-            </div>
+        {/* Onglets */}
+        <div className="mb-6">
+          <div className="inline-flex rounded-lg border border-zinc-300 bg-white overflow-hidden">
+            <button
+              onClick={() => setActiveTab('expenses')}
+              className={`px-4 py-2 text-sm ${activeTab === 'expenses' ? 'bg-zinc-900 text-white' : 'text-zinc-700 hover:bg-zinc-100'}`}
+            >
+              Dépenses
+            </button>
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`px-4 py-2 text-sm ${activeTab === 'analytics' ? 'bg-zinc-900 text-white' : 'text-zinc-700 hover:bg-zinc-100'}`}
+            >
+              Analytics
+            </button>
           </div>
         </div>
-      </div>
-        {/* Zone de test - Design moderne avec glassmorphism */}
-        <div className="backdrop-blur-xl bg-gradient-to-br from-slate-800/80 via-slate-800/70 to-slate-900/80 rounded-2xl md:rounded-3xl shadow-xl border border-slate-700/50 p-4 md:p-8 mb-6 md:mb-8 hover:shadow-2xl transition-all duration-500 ring-1 ring-white/10">
-          <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-8">
-            <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl backdrop-blur-sm bg-gradient-to-br from-blue-600/80 to-blue-700/80 flex items-center justify-center shadow-lg ring-2 ring-blue-400/50 border border-blue-500/30">
-              <PaperAirplaneIcon className="w-5 h-5 md:w-7 md:h-7 text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg md:text-2xl font-black text-white mb-1">Simulateur WhatsApp</h2>
-              <p className="text-xs md:text-sm text-slate-300 font-medium">Testez la réception automatique de dépenses</p>
-            </div>
+
+        {/* Analytics */}
+        {activeTab === 'analytics' && (
+        <div className="bg-white rounded-lg shadow-sm border border-zinc-200 p-6 mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-zinc-900">Analytics</h2>
+            <button onClick={loadAnalytics} disabled={aLoading} className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 border border-zinc-300 rounded-lg hover:bg-zinc-50">
+              <ArrowPathIcon className={`w-4 h-4 ${aLoading ? 'animate-spin' : ''}`} />
+              Rafraîchir
+            </button>
           </div>
 
-          {/* Onglets modernes */}
-          <div className="flex gap-2 md:gap-3 mb-4 md:mb-8 p-1 md:p-1.5 backdrop-blur-sm bg-slate-700/40 rounded-xl md:rounded-2xl border border-slate-600/50">
-            <button
-              onClick={() => {
-                setActiveTab('text')
-                setTestResult('')
-              }}
-              className={`flex-1 px-3 md:px-6 py-2.5 md:py-3.5 flex items-center justify-center gap-1.5 md:gap-2.5 font-bold text-xs md:text-sm rounded-lg md:rounded-xl transition-all duration-300 ${
-                activeTab === 'text'
-                  ? 'backdrop-blur-sm bg-gradient-to-r from-blue-600/80 to-blue-700/80 text-white shadow-lg scale-105 border border-blue-400/30 ring-1 ring-blue-300/20'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-700'
-              }`}
-            >
-              <DocumentTextIcon className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="hidden sm:inline">Message </span>texte
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('image')
-                setTestResult('')
-              }}
-              className={`flex-1 px-3 md:px-6 py-2.5 md:py-3.5 flex items-center justify-center gap-1.5 md:gap-2.5 font-bold text-xs md:text-sm rounded-lg md:rounded-xl transition-all duration-300 ${
-                activeTab === 'image'
-                  ? 'backdrop-blur-sm bg-gradient-to-r from-blue-600/80 to-blue-700/80 text-white shadow-lg scale-105 border border-blue-400/30 ring-1 ring-blue-300/20'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-700'
-              }`}
-            >
-              <PhotoIcon className="w-4 h-4 md:w-5 md:h-5" />
-              Image
-            </button>
-          </div>
-          
-          <div className="space-y-6">
-            {activeTab === 'text' ? (
-              <>
-                <div>
-                  <label htmlFor="test-message" className="block text-sm font-bold text-white mb-3">
-                    Message de test
-                    {testMessage.trim() && (
-                      <span className="ml-2 text-xs text-slate-400 font-normal">
-                        ({testMessage.length} caractères)
-                      </span>
-                    )}
-                  </label>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <input
-                      id="test-message"
-                      type="text"
-                      value={testMessage}
-                      onChange={(e) => setTestMessage(e.target.value)}
-                      placeholder="Ex: Restaurant Le Bistrot 25.50€"
-                      className="flex-1 p-3 md:p-4 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-xl md:rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium text-sm md:text-base"
-                      onKeyPress={(e) => e.key === 'Enter' && !sending && testMessage.trim() && simulateWhatsAppMessage()}
-                      disabled={sending}
-                    />
-                    <button
-                      onClick={simulateWhatsAppMessage}
-                      disabled={sending || !testMessage.trim()}
-                      className="px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl md:rounded-2xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-black text-xs md:text-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none"
-                    >
-                      {sending ? (
-                        <>
-                          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                          </svg>
-                          <span>Envoi...</span>
-                        </>
-                      ) : (
-                        <>
-                          <PaperAirplaneIcon className="w-5 h-5" />
-                          Envoyer
-                        </>
-                      )}
-                    </button>
-                  </div>
+          {!analytics ? (
+            <div className="text-sm text-zinc-500">Chargement des analytics...</div>
+          ) : (
+            <div className="space-y-6">
+              {/* KPIs */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 border border-zinc-200 rounded-lg">
+                  <div className="text-sm text-zinc-500">Total dépenses</div>
+                  <div className="text-2xl font-semibold">{analytics.totals.totalAmount.toFixed(2)}€</div>
                 </div>
+                <div className="p-4 border border-zinc-200 rounded-lg">
+                  <div className="text-sm text-zinc-500">Nombre</div>
+                  <div className="text-2xl font-semibold">{analytics.totals.totalCount}</div>
+                </div>
+                <div className="p-4 border border-zinc-200 rounded-lg">
+                  <div className="text-sm text-zinc-500">Moyenne</div>
+                  <div className="text-2xl font-semibold">{analytics.totals.avgAmount.toFixed(2)}€</div>
+                </div>
+              </div>
 
-                {/* Exemples de messages - Design moderne */}
-                <div>
-                  <p className="text-sm font-bold text-slate-300 mb-3">Exemples à tester:</p>
-                  <div className="flex flex-wrap gap-2.5">
-                    {[
-                      "Restaurant Le Petit Bistrot 23.50€",
-                      "Taxi aéroport 45€", 
-                      "dépense essence 67.30€",
-                      "Hotel Berlin 120€/nuit",
-                      "ticket restaurant voir photo"
-                    ].map((example, index) => (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          setTestMessage(example)
-                          showToast('✅ Exemple chargé', 'success')
-                        }}
-                        className="px-4 py-2 backdrop-blur-sm bg-slate-700/40 border border-slate-600/60 text-slate-200 rounded-xl hover:bg-blue-500/30 hover:border-blue-400 hover:text-white transition-all duration-300 text-sm font-medium hover:scale-105 shadow-sm"
-                      >
-                        {example}
-                      </button>
+              {/* Categories */}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Dépenses par catégorie</h3>
+                {analytics.byCategory.length === 0 ? (
+                  <div className="text-sm text-zinc-500">Aucune donnée</div>
+                ) : (
+                  <div className="space-y-2">
+                    {analytics.byCategory.map((c) => (
+                      <div key={c.category} className="flex items-center gap-3">
+                        <div className="w-32 text-sm text-zinc-700">{c.category}</div>
+                        <div className="flex-1 h-3 bg-zinc-100 rounded overflow-hidden">
+                          <div className="h-3 bg-green-500" style={{ width: `${Math.min(100, (c.amount / Math.max(1, analytics.totals.totalAmount)) * 100)}%` }} />
+                        </div>
+                        <div className="w-28 text-right text-sm text-zinc-700">{c.amount.toFixed(2)}€</div>
+                        <div className="w-16 text-right text-xs text-zinc-500">{c.count}x</div>
+                      </div>
                     ))}
                   </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <div>
-                  <label htmlFor="image-upload" className="block text-sm font-bold text-white mb-3">
-                    Sélectionner une image
-                    {selectedImage && (
-                      <span className="ml-2 text-xs text-slate-400 font-normal">✅ Image sélectionnée</span>
-                    )}
-                  </label>
-                  <div className="flex gap-3">
-                    <label
-                      htmlFor="image-upload"
-                      className="flex-1 cursor-pointer"
-                    >
-                      <div className="p-4 md:p-6 border-2 border-dashed border-slate-600/60 rounded-xl md:rounded-2xl hover:border-blue-400 hover:bg-slate-700/40 transition-all duration-300 text-center shadow-sm group backdrop-blur-sm bg-slate-700/30">
-                        {selectedImage ? (
-                          <div className="space-y-3">
-                            <img
-                              src={selectedImage}
-                              alt="Aperçu"
-                              className="max-h-40 mx-auto rounded-xl shadow-lg ring-2 ring-slate-600"
-                            />
-                            <p className="text-sm text-slate-300 font-medium">Cliquez pour changer d'image</p>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-center gap-3 py-6">
-                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl backdrop-blur-sm bg-gradient-to-br from-blue-500/40 to-blue-600/40 flex items-center justify-center group-hover:from-blue-500/50 group-hover:to-blue-600/50 transition-all border border-blue-400/30 ring-1 ring-blue-300/20">
-                              <PhotoIcon className="w-6 h-6 md:w-8 md:h-8 text-blue-300" />
-                            </div>
-                            <p className="text-sm text-slate-300 font-medium">Cliquez pour sélectionner une image</p>
-                            <p className="text-xs text-slate-400">JPG, PNG, WEBP (max 10MB)</p>
-                          </div>
-                        )}
+                )}
+              </div>
+
+              {/* Top merchants */}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Top marchands</h3>
+                {analytics.topMerchants.length === 0 ? (
+                  <div className="text-sm text-zinc-500">Aucune donnée</div>
+                ) : (
+                  <div className="space-y-2">
+                    {analytics.topMerchants.map((m) => (
+                      <div key={m.merchant} className="flex items-center gap-3">
+                        <div className="flex-1 text-sm text-zinc-700">{m.merchant}</div>
+                        <div className="w-24 text-right text-sm text-zinc-700">{m.amount.toFixed(2)}€</div>
+                        <div className="w-12 text-right text-xs text-zinc-500">{m.count}x</div>
                       </div>
-                      <input
-                        ref={fileInputRef}
-                        id="image-upload"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageSelect}
-                        className="hidden"
-                      />
-                    </label>
+                    ))}
                   </div>
-                </div>
+                )}
+              </div>
 
-                <div>
-                  <label htmlFor="image-caption" className="block text-sm font-bold text-white mb-3">
-                    Message optionnel (légende)
-                    {imageCaption && (
-                      <span className="ml-2 text-xs text-slate-400 font-normal">
-                        ({imageCaption.length} caractères)
-                      </span>
-                    )}
-                  </label>
-                  <input
-                    id="image-caption"
-                    type="text"
-                    value={imageCaption}
-                    onChange={(e) => setImageCaption(e.target.value)}
-                    placeholder="Ex: Ticket restaurant du 15/01"
-                    className="w-full p-3 md:p-4 backdrop-blur-sm bg-slate-700/40 border-2 border-slate-600/60 rounded-xl md:rounded-2xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 hover:border-slate-500/80 shadow-sm text-white placeholder:text-slate-400 font-medium text-sm md:text-base"
-                    onKeyPress={(e) => e.key === 'Enter' && !sending && selectedImage && simulateWhatsAppMessage()}
-                    disabled={sending}
-                  />
-                </div>
+              {/* Trend */}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Évolution quotidienne</h3>
+                {analytics.byDay.length === 0 ? (
+                  <div className="text-sm text-zinc-500">Aucune donnée</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <div className="min-w-[600px] grid grid-cols-12 gap-2">
+                      {analytics.byDay.map((d) => (
+                        <div key={d.date} className="flex flex-col items-center">
+                          <div className="w-4 bg-blue-500 rounded" style={{ height: `${Math.min(120, d.amount)}px` }} />
+                          <div className="text-[10px] text-zinc-500 mt-1">{d.date.slice(5)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        )}
 
-                <div className="flex justify-end">
+        {/* Liste des dépenses */}
+        {activeTab === 'expenses' && (
+        <div className="bg-white rounded-lg shadow-sm border border-zinc-200">
+          <div className="p-6 border-b border-zinc-200">
+            <div className="flex flex-col gap-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold text-zinc-900 flex items-center gap-2">
+                  <EyeIcon className="w-5 h-5" />
+                  Dépenses WhatsApp ({expenses.length}/{total})
+                </h2>
+                <button onClick={() => { loadExpenses(); loadAnalytics(); }} disabled={loading || aLoading} className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 border border-zinc-300 rounded-lg hover:bg-zinc-50">
+                  <ArrowPathIcon className={`w-4 h-4 ${(loading || aLoading) ? 'animate-spin' : ''}`} />
+                  Actualiser
+                </button>
+              </div>
+
+              {/* Filtres */}
+              <div className="grid grid-cols-1 md:grid-cols-6 gap-2">
+                <input
+                  type="text"
+                  placeholder="Recherche (marchand, texte)"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="md:col-span-2 p-2 border border-zinc-300 rounded"
+                />
+                <input
+                  type="date"
+                  value={start}
+                  onChange={(e) => setStart(e.target.value)}
+                  className="p-2 border border-zinc-300 rounded"
+                />
+                <input
+                  type="date"
+                  value={end}
+                  onChange={(e) => setEnd(e.target.value)}
+                  className="p-2 border border-zinc-300 rounded"
+                />
+                <select value={category} onChange={(e) => setCategory(e.target.value)} className="p-2 border border-zinc-300 rounded">
+                  <option value="">Toutes catégories</option>
+                  <option value="Restauration">Restauration</option>
+                  <option value="Transport">Transport</option>
+                  <option value="Divers">Divers</option>
+                </select>
+                <div className="flex gap-2">
+                  <select value={sort} onChange={(e) => setSort(e.target.value as any)} className="p-2 border border-zinc-300 rounded">
+                    <option value="created_at">Tri: Création</option>
+                    <option value="received_at">Tri: Reçu</option>
+                    <option value="amount">Tri: Montant</option>
+                  </select>
+                  <select value={order} onChange={(e) => setOrder(e.target.value as any)} className="p-2 border border-zinc-300 rounded">
+                    <option value="desc">Desc</option>
+                    <option value="asc">Asc</option>
+                  </select>
+                </div>
+                <div className="flex gap-2 md:col-span-6">
                   <button
-                    onClick={simulateWhatsAppMessage}
-                    disabled={sending || !selectedImage}
-                    className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2.5 font-black text-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none"
+                    onClick={() => loadExpenses({ resetPage: true })}
+                    className="px-3 py-2 bg-zinc-900 text-white rounded hover:bg-zinc-800"
                   >
-                    {sending ? (
-                      <>
-                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                        <span>Envoi...</span>
-                      </>
-                    ) : (
-                      <>
-                        <PaperAirplaneIcon className="w-5 h-5" />
-                        Envoyer l'image
-                      </>
-                    )}
+                    Appliquer
+                  </button>
+                  <button
+                    onClick={() => { setSearch(''); setCategory(''); setStart(''); setEnd(''); setSort('created_at'); setOrder('desc'); setPage(1); setPageSize(20); loadExpenses({ resetPage: true })}}
+                    className="px-3 py-2 border border-zinc-300 rounded hover:bg-zinc-50"
+                  >
+                    Réinitialiser
                   </button>
                 </div>
-              </>
-            )}
-
-            {/* Résultat du test - Design moderne */}
-            {testResult && (
-              <div className={`p-4 rounded-2xl text-sm font-medium border-2 shadow-lg animate-fade-in backdrop-blur-sm ${
-                testResult.startsWith('✅') 
-                  ? 'bg-gradient-to-r from-emerald-900/40 to-green-900/40 border-emerald-500/60 text-emerald-100' 
-                  : 'bg-gradient-to-r from-red-900/40 to-rose-900/40 border-red-500/60 text-red-100'
-              }`}>
-                {testResult}
               </div>
-            )}
-          </div>
-        </div>
 
-        {/* Liste des dépenses - Design moderne */}
-        <div ref={expensesRef} className="backdrop-blur-xl bg-gradient-to-br from-slate-800/80 via-slate-800/70 to-slate-900/80 rounded-2xl md:rounded-3xl shadow-xl border border-slate-700/50 hover:shadow-2xl transition-all duration-500 ring-1 ring-white/10">
-          <div className="p-4 md:p-8 border-b border-slate-700/50">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div className="flex items-center gap-3 md:gap-4">
-                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl backdrop-blur-sm bg-gradient-to-br from-blue-600/80 to-blue-700/80 flex items-center justify-center shadow-lg ring-2 ring-blue-400/50 border border-blue-500/30">
-                  <EyeIcon className="w-5 h-5 md:w-7 md:h-7 text-white" />
-                </div>
+              {/* Pagination */}
+              <div className="flex items-center justify-between text-sm text-zinc-600">
                 <div>
-                  <h2 className="text-lg md:text-2xl font-black text-white mb-1">Factures WhatsApp</h2>
-                  <p className="text-xs md:text-sm text-slate-300 font-medium">
-                    {expenses.length} dépense{expenses.length > 1 ? 's' : ''} reçue{expenses.length > 1 ? 's' : ''}
-                    {lastRefresh && (
-                      <span className="hidden md:inline ml-2 text-xs text-slate-400">
-                        • Dernière mise à jour: {formatTimeAgo(lastRefresh)}
-                      </span>
-                    )}
-                  </p>
+                  Page {page} / {Math.max(1, Math.ceil(total / pageSize))} — {total} résultats
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => { if (page > 1) { setPage(page - 1); loadExpenses(); } }}
+                    disabled={page <= 1 || loading}
+                    className="px-2 py-1 border border-zinc-300 rounded disabled:opacity-50"
+                  >
+                    Précédent
+                  </button>
+                  <button
+                    onClick={() => { const last = Math.max(1, Math.ceil(total / pageSize)); if (page < last) { setPage(page + 1); loadExpenses(); } }}
+                    disabled={page >= Math.max(1, Math.ceil(total / pageSize)) || loading}
+                    className="px-2 py-1 border border-zinc-300 rounded disabled:opacity-50"
+                  >
+                    Suivant
+                  </button>
+                  <select value={pageSize} onChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPage(1); loadExpenses({ resetPage: true }) }} className="p-1 border border-zinc-300 rounded">
+                    {[10, 20, 50, 100].map((s) => (
+                      <option key={s} value={s}>{s}/page</option>
+                    ))}
+                  </select>
                 </div>
               </div>
-              <button
-                onClick={() => loadExpenses()}
-                disabled={loading}
-                className="w-full md:w-auto flex items-center justify-center gap-2 px-4 md:px-6 py-2.5 md:py-3.5 text-xs md:text-sm text-white backdrop-blur-sm bg-gradient-to-r from-blue-600/80 to-blue-700/80 hover:from-blue-700/90 hover:to-blue-800/90 rounded-xl md:rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl font-black hover:scale-105 border border-blue-400/30 ring-1 ring-blue-300/20"
-              >
-                <ArrowPathIcon className={`w-4 h-4 md:w-5 md:h-5 ${loading ? 'animate-spin' : ''}`} />
-                Actualiser
-              </button>
             </div>
           </div>
 
-          <div className="divide-y divide-slate-700/50">
+          <div className="divide-y divide-zinc-200">
             {expenses.length === 0 ? (
-              <div className="p-16 text-center">
-                <div className="w-24 h-24 backdrop-blur-sm bg-gradient-to-br from-slate-700/60 to-slate-600/60 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg border border-slate-600/50">
-                  <DevicePhoneMobileIcon className="w-12 h-12 text-slate-400" />
-                </div>
-                <p className="text-white font-bold text-lg mb-2">Aucune dépense WhatsApp reçue</p>
-                <p className="text-sm text-slate-300 font-medium">Testez avec le simulateur ci-dessus</p>
+              <div className="p-8 text-center text-zinc-500">
+                <DevicePhoneMobileIcon className="w-12 h-12 mx-auto mb-4 text-zinc-300" />
+                <p>Aucune dépense WhatsApp reçue</p>
+                <p className="text-sm mt-1">Testez avec le simulateur ci-dessus</p>
               </div>
             ) : (
-              expenses.map((expense, index) => (
-                <div 
-                  key={expense.id} 
-                  className="p-4 md:p-8 border-b border-slate-700/50 last:border-b-0 hover:bg-slate-800/40 transition-all duration-300 group animate-fade-in"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="flex justify-between items-start mb-3 md:mb-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3 flex-wrap">
-                        <span className="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-amber-400">
-                          {expense.amount}€
-                        </span>
-                        <span className="px-2 md:px-4 py-1 md:py-1.5 backdrop-blur-md bg-gradient-to-r from-yellow-500/50 to-yellow-600/50 border border-yellow-400/70 text-yellow-100 text-xs font-black rounded-full shadow-sm ring-1 ring-yellow-300/30">
-                          {expense.category}
-                        </span>
-                        <span className="px-2 md:px-4 py-1 md:py-1.5 backdrop-blur-sm bg-slate-700/40 border border-slate-600/60 text-slate-200 text-xs font-black rounded-full">
-                          WhatsApp
-                        </span>
-                        <span className="px-2 md:px-4 py-1 md:py-1.5 backdrop-blur-sm bg-slate-700/40 border border-slate-600/60 text-slate-200 text-xs font-black rounded-full">
-                          {Math.round(expense.confidence * 100)}%
-                        </span>
+              <>
+                {expenses.map((expense) => (
+                  <div key={expense.id} className="p-6">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-lg font-semibold text-zinc-900">{expense.amount}€</span>
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">{expense.category}</span>
+                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">WhatsApp</span>
+                        </div>
+                        <p className="text-zinc-700 font-medium">{expense.merchant}</p>
+                        <p className="text-sm text-zinc-500">{expense.description}</p>
                       </div>
-                      <p className="text-white font-black text-base md:text-xl mb-1 md:mb-2 break-words">{expense.merchant}</p>
-                      <p className="text-xs md:text-sm text-slate-300 font-medium break-words">{expense.description}</p>
+                      {(expense.image_data || expense.image_url) && (
+                        <div className="flex-shrink-0 mr-4">
+                          <img
+                            src={expense.image_data || expense.image_url}
+                            alt="Ticket de dépense"
+                            className="w-16 h-16 object-cover rounded-lg border border-zinc-200 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => {
+                              const imgSrc = expense.image_data || expense.image_url
+                              if (!imgSrc) return
+                              setViewerSrc(imgSrc)
+                            }}
+                            title="Cliquez pour agrandir l'image"
+                          />
+                          {expense.image_data && (
+                            <div className="text-xs text-center text-zinc-400 mt-1">📸</div>
+                          )}
+                        </div>
+                      )}
+                      <div className="text-right text-sm text-zinc-500 flex-shrink-0">
+                        <p>Confiance: {Math.round((expense.confidence || 0) * 100)}%</p>
+                        <p>Reçu: {expense.received_at ? new Date(expense.received_at).toLocaleString('fr-FR') : 'Date inconnue'}</p>
+                      </div>
                     </div>
+                    {expense.original_message && (
+                      <div className="bg-zinc-50 p-3 rounded text-sm">
+                        <p className="text-zinc-600"><strong>Message original:</strong> "{expense.original_message}"</p>
+                        <p className="text-zinc-500 text-xs mt-1">De: {expense.whatsapp_from}</p>
+                      </div>
+                    )}
                   </div>
-
-                  {expense.original_message && (
-                    <div className="backdrop-blur-sm bg-slate-700/40 p-3 md:p-5 rounded-xl md:rounded-2xl border border-slate-600/60 mt-3 md:mt-4 shadow-sm">
-                      <p className="text-xs md:text-sm text-slate-200 mb-2 font-medium break-words">
-                        <strong className="text-white font-black">Message original:</strong> &quot;{expense.original_message}&quot;
-                      </p>
-                      <p className="text-xs text-slate-400 flex items-center gap-2 font-medium flex-wrap">
-                        <span>De:</span>
-                        <span className="font-bold text-slate-300">{expense.whatsapp_from}</span>
-                        <span className="mx-1">•</span>
-                        <span>{new Date(expense.received_at).toLocaleString('fr-FR')}</span>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))
+                ))}
+              </>
             )}
           </div>
         </div>
 
-        {/* Instructions - Design moderne compact */}
-        <div className="mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          <div className="backdrop-blur-xl bg-gradient-to-br from-blue-100/60 to-blue-200/60 rounded-2xl md:rounded-3xl shadow-lg border border-blue-400/50 p-4 md:p-6 hover:shadow-xl transition-all duration-500 ring-1 ring-blue-300/30">
-            <h3 className="font-black text-slate-900 mb-4 flex items-center gap-2.5 text-lg">
-              <span className="text-2xl">🆓</span>
-              <span>Bot WhatsApp Gratuit</span>
-            </h3>
-            <div className="space-y-3 text-sm text-slate-700 font-medium">
-              <p className="font-black text-slate-900 mb-2">📱 Comment utiliser:</p>
-              <ol className="list-decimal list-inside space-y-2 ml-2">
-                <li>Lancez: <code className="backdrop-blur-sm bg-white/70 px-2 py-1 rounded-lg text-slate-900 font-bold text-xs border border-amber-400/50">npm run whatsapp-bot</code></li>
-                <li>Scannez le QR code avec WhatsApp</li>
-                <li>Envoyez une photo de ticket</li>
-                <li>La dépense apparaît automatiquement!</li>
-              </ol>
-            </div>
-          </div>
-
-          <div className="backdrop-blur-xl bg-gradient-to-br from-blue-100/60 to-blue-200/60 rounded-3xl shadow-lg border border-blue-400/50 p-6 hover:shadow-xl transition-all duration-500 ring-1 ring-blue-300/30">
-            <h3 className="font-black text-slate-900 mb-4 flex items-center gap-2.5 text-lg">
-              <span className="text-2xl">💡</span>
-              <span>Instructions</span>
-            </h3>
-            <div className="grid grid-cols-1 gap-3 text-sm text-slate-700 font-medium">
-              <div className="backdrop-blur-sm bg-white/60 rounded-xl p-3 border border-amber-400/50 shadow-sm">
-                <p className="font-black text-slate-900 mb-1 text-xs">Test local</p>
-                <p className="text-xs">Utilisez le simulateur ci-dessus</p>
-              </div>
-              <div className="backdrop-blur-sm bg-white/60 rounded-xl p-3 border border-amber-400/50 shadow-sm">
-                <p className="font-black text-slate-900 mb-1 text-xs">Mots-clés détectés</p>
-                <p className="text-xs">dépense, ticket, facture, restaurant, taxi, €</p>
-              </div>
-            </div>
+        )}
+        {/* Aide */}
+        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h3 className="font-semibold text-blue-900 mb-2">💡 Aide</h3>
+          <div className="text-sm text-blue-800 space-y-1">
+            <p>• Filtrez par date, catégorie ou mot-clé pour affiner les résultats</p>
+            <p>• Triez par date de création, date de réception ou montant</p>
+            <p>• Utilisez la pagination et changez la taille de page selon vos besoins</p>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes slide-in-right {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-in-right {
-          animation: slide-in-right 0.3s ease-out;
-        }
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.4s ease-out;
-        }
-      `}</style>
     </div>
-  )
+
+    {/* Image Viewer Modal */}
+    {viewerSrc && (
+      <div
+        className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+        onClick={() => setViewerSrc(null)}
+      >
+        <div className="relative max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => setViewerSrc(null)}
+            className="absolute -top-3 -right-3 bg-white text-zinc-700 rounded-full p-2 shadow hover:bg-zinc-100"
+            aria-label="Fermer"
+            title="Fermer"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+          <div className="bg-white rounded-lg overflow-hidden">
+            <img src={viewerSrc} alt="Aperçu" className="w-full h-auto max-h-[80vh] object-contain" />
+          </div>
+        </div>
+      </div>
+    )}
+  </>
+)
 }

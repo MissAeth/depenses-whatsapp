@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 Gestion Dépenses WhatsApp</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial; background: #f9fafb; min-height: 100vh; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center; }
+        .header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .header p { opacity: 0.9; }
+        .content { padding: 2rem; }
+        .status-card { background: #ecfdf5; border: 1px solid #d1fae5; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; }
+        .status-card h3 { color: #065f46; margin-bottom: 0.5rem; }
+        .webhook-url { background: #f3f4f6; padding: 0.75rem; border-radius: 6px; font-family: monospace; word-break: break-all; margin: 0.5rem 0; }
+        .test-section { background: #f8fafc; border-radius: 8px; padding: 1.5rem; margin-top: 1.5rem; }
+        .button { background: #3b82f6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 1rem; margin: 0.5rem 0.5rem 0.5rem 0; }
+        .button:hover { background: #2563eb; }
+        .result { margin-top: 1rem; padding: 1rem; border-radius: 6px; display: none; }
+        .success { background: #ecfdf5; border: 1px solid #d1fae5; color: #065f46; }
+        .error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+        pre { background: #f1f5f9; padding: 0.75rem; border-radius: 4px; font-size: 0.875rem; overflow-x: auto; margin: 0.5rem 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Dépenses WhatsApp</h1>
+            <p>Solution IA pour automatiser vos notes de frais</p>
+        </div>
+        
+        <div class="content">
+            <div class="status-card">
+                <h3>🎉 Application Déployée avec Succès !</h3>
+                <p>Votre webhook WhatsApp est maintenant actif et prêt à recevoir vos dépenses.</p>
+                
+                <div style="margin-top: 1rem;">
+                    <strong>📡 Webhook URL :</strong>
+                    <div class="webhook-url" id="webhookUrl">
+                        https://depense-whatsapp-vercel1.vercel.app/api/whatsapp
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h3>🧪 Test du Webhook</h3>
+                <p>Testez votre webhook en envoyant une dépense fictive :</p>
+                
+                <button class="button" onclick="testWebhook()">🚀 Tester Webhook</button>
+                <button class="button" onclick="testWithImage()">📷 Test avec Image</button>
+                
+                <div id="testResult" class="result"></div>
+            </div>
+            
+            <div style="margin-top: 2rem; padding: 1rem; border-left: 4px solid #3b82f6; background: #f8fafc;">
+                <h3>📱 Configuration WhatsApp Business</h3>
+                <p><strong>1.</strong> Allez sur <a href="https://developers.facebook.com/" target="_blank">Meta for Developers</a></p>
+                <p><strong>2.</strong> Créez une app WhatsApp Business</p>
+                <p><strong>3.</strong> Webhook URL : <code>https://depense-whatsapp-vercel1.vercel.app/api/whatsapp</code></p>
+                <p><strong>4.</strong> Token de vérification : <code>webhook_verify_token_123</code></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mise à jour automatique de l'URL
+        document.getElementById('webhookUrl').textContent = window.location.origin + '/api/whatsapp';
+
+        async function testWebhook() {
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = '⏳ Test en cours...';
+            
+            try {
+                const response = await fetch('/api/whatsapp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        from: 'test_user',
+                        text: 'Restaurant Le Bistrot - déjeuner client 23.50€'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>✅ Webhook fonctionne !</strong><br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <strong>❌ Erreur :</strong> ${error.message}<br>
+                    <small>Vérifiez que l'API est bien déployée</small>
+                `;
+            }
+        }
+        
+        async function testWithImage() {
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = '⏳ Test avec image...';
+            
+            try {
+                const response = await fetch('/api/whatsapp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        from: 'test_user',
+                        text: 'Facture taxi aéroport',
+                        entry: [{
+                            changes: [{
+                                value: {
+                                    messages: [{
+                                        from: 'test',
+                                        type: 'image',
+                                        text: { body: 'Taxi 45€ vers aéroport CDG' }
+                                    }]
+                                }
+                            }]
+                        }]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>✅ Test image réussi !</strong><br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <strong>❌ Erreur :</strong> ${error.message}
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
