@@ -116,8 +116,13 @@ export default function Home() {
             <div className="flex justify-between items-center">
             <div>
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-zinc-900 rounded flex items-center justify-center">
-                  <span className="text-white text-sm">💰</span>
+                <div className="w-7 h-7 rounded flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/smart-expense-logo.png" 
+                    alt="SmartExpense Logo" 
+                    className="w-full h-full object-contain"
+                    loading="eager"
+                  />
                 </div>
                 <h1 className="text-2xl font-semibold text-zinc-900">SmartExpense</h1>
               </div>
